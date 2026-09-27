@@ -168,6 +168,7 @@ Claim submit validation also returns `validation.failed` (400) with field keys: 
 | Method | Route | Success | Notes |
 | ------ | ----- | ------- | ----- |
 | GET | `/api/v1/reports/{id}/claims` | 200 `ReportClaimSummaryResponse[]` | Reporter only |
+| GET | `/api/v1/claims/inbox` | 200 paginated `IncomingClaimInboxItemResponse` | Reporter: pending claims on own reports |
 | GET | `/api/v1/claims/mine` | 200 paginated `MyClaimSummaryResponse` | Claimant only |
 | GET | `/api/v1/claims/{id}` | 200 `ClaimDetailResponse` | Claimant or reporter |
 | POST | `/api/v1/claims/{id}/approve` | 204 | Reporter; report → `claim_in_progress` |

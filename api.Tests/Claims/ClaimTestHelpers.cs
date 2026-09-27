@@ -236,6 +236,19 @@ public static class ClaimTestHelpers
         return (response, body);
     }
 
+    public static async Task<(HttpResponseMessage Response, PaginatedResponse<IncomingClaimInboxItemResponse>? Body)> GetIncomingClaimsInboxAsync(
+        HttpClient client,
+        int page = 1,
+        int pageSize = 20)
+    {
+        var response = await client.GetAsync($"/api/v1/claims/inbox?page={page}&pageSize={pageSize}");
+        PaginatedResponse<IncomingClaimInboxItemResponse>? body = response.IsSuccessStatusCode
+            ? await response.Content.ReadFromJsonAsync<PaginatedResponse<IncomingClaimInboxItemResponse>>()
+            : null;
+
+        return (response, body);
+    }
+
     public static void AuthenticateReporter(HttpClient client, ReportTestContext context) =>
         Authenticate(client, context.Session.AccessToken);
 }

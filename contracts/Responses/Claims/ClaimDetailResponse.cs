@@ -80,3 +80,22 @@ public sealed class MyClaimSummaryResponse
 
     public ResolutionStateResponse? Resolution { get; init; }
 }
+
+public sealed class IncomingClaimInboxItemResponse
+{
+    public required Guid Id { get; init; }
+
+    public required string Status { get; init; }
+
+    public DateTimeOffset SubmittedAt { get; init; }
+
+    public int AttemptNumber { get; init; }
+
+    public required Guid ReportId { get; init; }
+
+    public required string ReportType { get; init; }
+
+    public required string ReportTitle { get; init; }
+
+    public required string ClaimantDisplayName { get; init; }
+}

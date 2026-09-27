@@ -117,7 +117,7 @@ None additional.
 
 | Event | Recipient | Status |
 | ----- | --------- | ------ |
-| New claim submitted | Reporter | Shipped (`NewClaimSubmitted` → `/my/reports/{id}#claims-section`) |
+| New claim submitted | Reporter | Shipped (`NewClaimSubmitted` → `/my/incoming-claims`) |
 | Claim withdrawn by claimant | Reporter | Shipped |
 | Claim approved | Claimant | Shipped (deep link `/my/chats/{threadId}` opens chat thread) |
 | Claim rejected | Claimant | Shipped |

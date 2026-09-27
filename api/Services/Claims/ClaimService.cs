@@ -271,7 +271,7 @@ public sealed class ClaimService(
                 PayloadJson = new NotificationPayload(
                     NotificationTypes.NewClaimSubmitted,
                     now,
-                    DeepLink: $"/my/reports/{reportId}#claims-section",
+                    DeepLink: "/my/incoming-claims",
                     ReportId: reportId).ToJson(),
                 IsRead = false,
                 CreatedAt = now,
@@ -619,7 +619,7 @@ public sealed class ClaimService(
             PayloadJson = new NotificationPayload(
                 NotificationTypes.ClaimWithdrawnByClaimant,
                 now,
-                DeepLink: $"/my/reports/{claim.ReportId}",
+                DeepLink: "/my/incoming-claims",
                 ReportId: claim.ReportId).ToJson(),
             IsRead = false,
             CreatedAt = now,
@@ -689,7 +689,7 @@ public sealed class ClaimService(
                 PayloadJson = new NotificationPayload(
                     NotificationTypes.ClaimAutoWithdrawn,
                     now,
-                    DeepLink: $"/my/reports/{claim.ReportId}#claims-section",
+                    DeepLink: "/my/incoming-claims",
                     ReportId: claim.ReportId).ToJson(),
                 IsRead = false,
                 CreatedAt = now,
@@ -765,6 +765,59 @@ public sealed class ClaimService(
         return new PaginatedResponse<MyClaimSummaryResponse>
         {
             Items = claims.Select(ToMyClaimSummary).ToList(),
+            Page = query.Page,
+            PageSize = query.PageSize,
+            TotalCount = totalCount,
+            TotalPages = totalCount == 0
+                ? 0
+                : (int)Math.Ceiling(totalCount / (double)query.PageSize),
+        };
+    }
+
+    public async Task<Result<PaginatedResponse<IncomingClaimInboxItemResponse>>> GetInboxAsync(
+        Guid reporterId,
+        MyClaimsQuery query,
+        CancellationToken cancellationToken = default)
+    {
+        if (query.Page < 1)
+        {
+            return ResultError.BadRequest(
+                "Please correct the errors in the form.",
+                errors: new Dictionary<string, string[]>
+                {
+                    ["page"] = ["Page must be at least 1."],
+                });
+        }
+
+        if (query.PageSize is < 1 or > 50)
+        {
+            return ResultError.BadRequest(
+                "Please correct the errors in the form.",
+                errors: new Dictionary<string, string[]>
+                {
+                    ["pageSize"] = ["Page size must be between 1 and 50."],
+                });
+        }
+
+        var claimsQuery = dbContext.Claims
+            .AsNoTracking()
+            .Include(claim => claim.Report)
+            .Include(claim => claim.Claimant)
+            .Where(claim =>
+                claim.Report.ReporterId == reporterId
+                && claim.Status == ClaimStatus.Pending);
+
+        var totalCount = await claimsQuery.CountAsync(cancellationToken);
+
+        var claims = await claimsQuery
+            .OrderByDescending(claim => claim.SubmittedAt)
+            .Skip((query.Page - 1) * query.PageSize)
+            .Take(query.PageSize)
+            .ToListAsync(cancellationToken);
+
+        return new PaginatedResponse<IncomingClaimInboxItemResponse>
+        {
+            Items = claims.Select(ToIncomingClaimInboxItem).ToList(),
             Page = query.Page,
             PageSize = query.PageSize,
             TotalCount = totalCount,
@@ -937,6 +990,19 @@ public sealed class ClaimService(
             ReportType = ToReportType(claim.Report.Type),
             ReportTitle = claim.Report.Title,
             ReporterDisplayName = claim.Report.Reporter.DisplayName ?? string.Empty,
+        };
+
+    private static IncomingClaimInboxItemResponse ToIncomingClaimInboxItem(Claim claim) =>
+        new()
+        {
+            Id = claim.Id,
+            Status = ToClaimStatus(claim.Status),
+            SubmittedAt = claim.SubmittedAt,
+            AttemptNumber = claim.AttemptNumber,
+            ReportId = claim.ReportId,
+            ReportType = ToReportType(claim.Report.Type),
+            ReportTitle = claim.Report.Title,
+            ClaimantDisplayName = claim.Claimant.DisplayName ?? string.Empty,
         };
 
     private static string ToReportType(ReportType type) => type switch

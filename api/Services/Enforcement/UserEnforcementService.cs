@@ -289,7 +289,7 @@ public sealed class UserEnforcementService(
                 PayloadJson = new NotificationPayload(
                     NotificationTypes.ClaimWithdrawnByClaimant,
                     now,
-                    DeepLink: $"/my/reports/{claim.ReportId}",
+                    DeepLink: "/my/incoming-claims",
                     ReportId: claim.ReportId).ToJson(),
                 IsRead = false,
                 CreatedAt = now,

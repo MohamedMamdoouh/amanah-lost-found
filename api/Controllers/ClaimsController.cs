@@ -35,6 +35,22 @@ public sealed class ClaimsController(
         return result.ToActionResult();
     }
 
+    [HttpGet("inbox")]
+    [EndpointName(nameof(GetIncomingClaimsInbox))]
+    [EndpointSummary("List pending claims submitted on the authenticated reporter's reports.")]
+    [ProducesResponseType(typeof(PaginatedResponse<IncomingClaimInboxItemResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiError), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiError), StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetIncomingClaimsInbox(
+        [FromQuery] MyClaimsQuery query,
+        CancellationToken cancellationToken)
+    {
+        User.TryGetUserId(out var reporterId);
+
+        var result = await claimService.GetInboxAsync(reporterId, query, cancellationToken);
+        return result.ToActionResult();
+    }
+
     [HttpGet("{id:guid}")]
     [EndpointName(nameof(GetClaim))]
     [EndpointSummary("Get claim detail for the claimant or report reporter.")]
