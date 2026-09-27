@@ -11,7 +11,7 @@
 }
 
 .info-page__masthead::after {
-  content: '';
+  content: "";
   display: block;
   width: 4.5rem;
   height: 3px;
@@ -62,7 +62,11 @@
 
 .info-card--highlight {
   border-color: rgba(8, 96, 96, 0.2);
-  background: linear-gradient(135deg, var(--color-accent-soft) 0%, var(--color-surface) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-accent-soft) 0%,
+    var(--color-surface) 100%
+  );
 }
 
 .info-card__icon {
@@ -111,7 +115,7 @@
 }
 
 .info-card__list li::before {
-  content: '';
+  content: "";
   position: absolute;
   inset-inline-start: 0;
   top: 0.55em;
@@ -146,7 +150,11 @@
   gap: var(--space-md);
   margin-top: var(--space-lg);
   padding: var(--space-lg);
-  background: linear-gradient(135deg, var(--color-accent-soft) 0%, var(--color-surface) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-accent-soft) 0%,
+    var(--color-surface) 100%
+  );
   color: var(--color-text);
   border: 1px solid rgba(8, 96, 96, 0.16);
   border-radius: var(--radius-lg);

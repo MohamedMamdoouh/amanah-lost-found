@@ -90,6 +90,7 @@ public class ApiWebApplicationFactory : WebApplicationFactory<ApiAssemblyMarker>
         OtpEmailSender.SentMessages.Clear();
         AdminAlertEmailSender.SentAlerts.Clear();
         AdminAlertEmailSender.ShouldThrow = false;
+        AdminAlertEmailSender.ShouldTimeout = false;
         AdminAlertEmailSender.FailureStatusCode = null;
         CaptchaVerifier.ShouldSucceed = true;
 

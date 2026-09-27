@@ -79,9 +79,15 @@ public sealed class AdminAlertEmailOutboxDispatcher(
             await transaction.CommitAsync(cancellationToken);
             return false;
         }
-        catch (Exception exception)
+        catch (HttpRequestException exception)
         {
             await MarkFailedAsync(message, exception.Message, cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+            return false;
+        }
+        catch (Exception exception) when (exception is TimeoutException or TaskCanceledException)
+        {
+            await MarkAmbiguousAsync(message, exception.Message, cancellationToken);
             await transaction.CommitAsync(cancellationToken);
             return false;
         }

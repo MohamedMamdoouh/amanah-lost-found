@@ -8,6 +8,8 @@ public sealed class RecordingAdminAlertEmailSender : IAdminAlertEmailSender
 
     public bool ShouldThrow { get; set; }
 
+    public bool ShouldTimeout { get; set; }
+
     public int? FailureStatusCode { get; set; }
 
     public Task SendNewSubmissionAlertAsync(
@@ -19,6 +21,13 @@ public sealed class RecordingAdminAlertEmailSender : IAdminAlertEmailSender
         if (FailureStatusCode is int statusCode)
         {
             throw new EmailApiException(statusCode, $"Email provider failed with HTTP {statusCode}.");
+        }
+
+        if (ShouldTimeout)
+        {
+            throw new TaskCanceledException(
+                "Email provider timed out.",
+                new TimeoutException("Email provider timed out."));
         }
 
         if (ShouldThrow)

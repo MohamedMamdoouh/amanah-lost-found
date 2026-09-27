@@ -34,6 +34,12 @@
           </h2>
 
           <div class="public-report-detail__actions-body">
+            @if (claimSubmitBlockMessage() && !claimFormOpen()) {
+              <app-alert variant="error">{{
+                claimSubmitBlockMessage()
+              }}</app-alert>
+            }
+
             @if (showClaimForm() && claimFormOpen()) {
               <app-claim-form
                 [reportId]="detail.id"

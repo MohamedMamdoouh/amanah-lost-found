@@ -97,6 +97,25 @@ public class ReportAdminAlertEmailTests(ApiWebApplicationFactory factory) : ICla
     }
 
     [Fact]
+    public async Task Email_provider_timeout_keeps_outbox_pending_for_retry()
+    {
+        ResetAlertSender(factory);
+        factory.AdminAlertEmailSender.ShouldTimeout = true;
+        await using var context = await ReportTestContext.CreateAsync(factory);
+
+        var (_, body) = await context.SubmitReportAsync(TestReportHelpers.BuildValidLostRequest());
+        Assert.NotNull(body);
+
+        await AdminAlertEmailOutboxTestHelpers.DrainPendingAsync(factory);
+
+        Assert.Empty(factory.AdminAlertEmailSender.SentAlerts);
+        var outboxMessage = await context.DbContext.AdminAlertEmailOutboxMessages.SingleAsync();
+        Assert.Equal(AdminAlertEmailOutboxStatus.Pending, outboxMessage.Status);
+        Assert.True(outboxMessage.AttemptCount >= 1);
+        Assert.Contains("timed out", outboxMessage.LastError, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Permanent_resend_failure_marks_outbox_failed()
     {
         ResetAlertSender(factory);
@@ -133,6 +152,7 @@ public class ReportAdminAlertEmailTests(ApiWebApplicationFactory factory) : ICla
     {
         factory.AdminAlertEmailSender.SentAlerts.Clear();
         factory.AdminAlertEmailSender.ShouldThrow = false;
+        factory.AdminAlertEmailSender.ShouldTimeout = false;
         factory.AdminAlertEmailSender.FailureStatusCode = null;
     }
 

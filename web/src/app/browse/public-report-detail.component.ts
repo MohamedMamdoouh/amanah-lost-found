@@ -20,6 +20,7 @@ import {
   loadReporterApprovedClaimId,
   showResolutionActions,
 } from '../claims/resolution/resolution.helpers';
+import { ApiErrorService } from '../i18n/api-error.service';
 import { DomainLabelService } from '../i18n/domain-label.service';
 import { ReportType } from '../reports/models/report.models';
 import { ReportService } from '../reports/report.service';
@@ -62,6 +63,7 @@ export class PublicReportDetailComponent implements OnInit {
   private readonly browseService = inject(BrowseService);
   protected readonly auth = inject(AuthService);
   private readonly claimService = inject(ClaimService);
+  private readonly apiErrors = inject(ApiErrorService);
   private readonly reportService = inject(ReportService);
   private readonly abuseFlagService = inject(AbuseFlagService);
   protected readonly domainLabels = inject(DomainLabelService);
@@ -79,6 +81,9 @@ export class PublicReportDetailComponent implements OnInit {
   readonly flagSuccessMessage = signal<string | null>(null);
   readonly actionFeedback = signal<ActionFeedbackState | null>(null);
   readonly claimFormOpen = signal(false);
+  readonly claimSubmitBlocked = signal(false);
+  readonly claimSubmitBlockMessage = signal<string | null>(null);
+  readonly claimEligibilityLoading = signal(false);
 
   readonly displayPhotos = computed<DisplayPhoto[]>(() => {
     const detail = this.report();
@@ -156,7 +161,11 @@ export class PublicReportDetailComponent implements OnInit {
   }
 
   isClaimDisabled(): boolean {
-    return this.isClaimInProgress();
+    return (
+      this.isClaimInProgress() ||
+      this.claimSubmitBlocked() ||
+      this.claimEligibilityLoading()
+    );
   }
 
   canClickMessage(): boolean {
@@ -301,6 +310,7 @@ export class PublicReportDetailComponent implements OnInit {
       await this.loadFlagContext(id, detail.status);
       await this.loadParticipantChat(id, detail.status);
       await this.loadPendingClaim(id, detail.status);
+      await this.loadClaimSubmitEligibility(id, detail.status);
       this.loading.set(false);
     } catch (error) {
       const route = mapBrowseError(error);
@@ -372,6 +382,44 @@ export class PublicReportDetailComponent implements OnInit {
       this.chatThreadId.set(claim.chatThreadId ?? null);
     } catch {
       this.chatThreadId.set(null);
+    }
+  }
+
+  private async loadClaimSubmitEligibility(
+    reportId: string,
+    status: PublicReportDetail['status'],
+  ): Promise<void> {
+    this.claimSubmitBlocked.set(false);
+    this.claimSubmitBlockMessage.set(null);
+    this.claimEligibilityLoading.set(false);
+
+    if (
+      status !== 'published' ||
+      !this.auth.isLoggedIn() ||
+      this.auth.isAdmin() ||
+      this.isListingOwner() ||
+      this.pendingClaimOnReport()
+    ) {
+      return;
+    }
+
+    this.claimEligibilityLoading.set(true);
+
+    try {
+      const eligibility = await firstValueFrom(
+        this.claimService.getSubmitEligibility(reportId),
+      );
+
+      if (!eligibility.canSubmit && eligibility.blockCode) {
+        this.claimSubmitBlocked.set(true);
+        this.claimSubmitBlockMessage.set(
+          this.apiErrors.messageForCode(eligibility.blockCode),
+        );
+      }
+    } catch {
+      // Leave claim usable; submit will surface server errors.
+    } finally {
+      this.claimEligibilityLoading.set(false);
     }
   }
 
