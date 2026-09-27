@@ -8,6 +8,7 @@ using Amanah.Api.Utilities.Abuse;
 using Amanah.Contracts.Errors;
 using Amanah.Contracts.Requests.Abuse;
 using Amanah.Contracts.Requests.Chats;
+using Amanah.Contracts.Requests.Support;
 using Amanah.Contracts.Responses.Browse;
 
 namespace Amanah.Api.Tests.Admin;
@@ -48,6 +49,27 @@ public class AdminParticipationTests(ApiWebApplicationFactory factory) : IClassF
 
         Assert.Equal(HttpStatusCode.Forbidden, claimResponse.StatusCode);
         Assert.Equal(ErrorCodes.AdminParticipationForbidden, claimError?.Code);
+    }
+
+    [Fact]
+    public async Task Admin_cannot_submit_support_message()
+    {
+        await using var context = await ReportTestContext.CreateAsync(factory);
+        await HttpTestHelpers.LoginAsAdminAsync(context);
+
+        var response = await context.Client.PostAsJsonAsync(
+            "/api/v1/support/messages",
+            new SubmitSupportMessageRequest
+            {
+                DisplayName = "Admin User",
+                ReplyEmail = "admin@example.com",
+                Message = "I need help with moderation tools.",
+                CaptchaToken = "test-token",
+            });
+        var error = await HttpTestHelpers.ReadErrorAsync(response);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.Equal(ErrorCodes.AdminParticipationForbidden, error?.Code);
     }
 
     [Fact]

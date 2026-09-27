@@ -1,3 +1,4 @@
+using Amanah.Api.Auth;
 using Amanah.Api.Models.Errors;
 using Amanah.Api.Services.Support;
 using Amanah.Contracts.Errors;
@@ -27,6 +28,12 @@ public sealed class SupportController(SupportService supportService) : Controlle
         [FromBody] SubmitSupportMessageRequest request,
         CancellationToken cancellationToken)
     {
+        if (User.Identity?.IsAuthenticated == true
+            && AdminParticipation.ForbidIfAdmin(User.GetUserRole()) is { } forbidden)
+        {
+            return forbidden.ToActionResult();
+        }
+
         var result = await supportService.SubmitAsync(request, cancellationToken);
         return result.ToActionResult();
     }

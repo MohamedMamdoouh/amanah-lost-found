@@ -1,4 +1,4 @@
-import { Routes } from '@angular/router';
+﻿import { Routes } from '@angular/router';
 
 import { AbuseDetailComponent } from './admin/abuse/abuse-detail.component';
 import { AbuseQueueComponent } from './admin/abuse/abuse-queue.component';
@@ -126,7 +126,11 @@ export const routes: Routes = [
       { path: 'terms', component: TermsComponent },
       { path: 'privacy', component: PrivacyComponent },
       { path: 'safety', component: SafetyComponent },
-      { path: 'support', component: SupportComponent },
+      {
+        path: 'support',
+        component: SupportComponent,
+        canActivate: [nonAdminGuard],
+      },
     ],
   },
 ];
