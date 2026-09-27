@@ -8,6 +8,7 @@ public static class CategoryAdminServiceExtensions
     {
         services.AddScoped<CategoryAdminService>();
         services.AddScoped<AdminUserLookupService>();
+        services.AddScoped<AdminAnalyticsService>();
 
         return services;
     }
