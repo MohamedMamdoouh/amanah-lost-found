@@ -90,7 +90,7 @@ export class LoginComponent implements OnDestroy {
   readonly identifierChannel = signal<AuthIdentifierChannel>('phone');
 
   private identifier = '';
-  private otpChannel: AuthIdentifierChannel = 'phone';
+  readonly otpChannel = signal<AuthIdentifierChannel>('phone');
   private signupToken: string | null = null;
   private resetToken: string | null = null;
   private cooldownTimer: ReturnType<typeof setInterval> | null = null;
@@ -143,7 +143,7 @@ export class LoginComponent implements OnDestroy {
     this.step.set('phone');
     this.clearErrors();
     this.identifier = '';
-    this.otpChannel = 'phone';
+    this.otpChannel.set('phone');
     this.signupToken = null;
     this.resetToken = null;
     this.identifierChannel.set('phone');
@@ -323,7 +323,7 @@ export class LoginComponent implements OnDestroy {
     this.clearErrors();
     this.submitting.set(true);
     this.identifier = this.phoneForm.controls.identifier.value.trim();
-    this.otpChannel = this.identifierChannel();
+    this.otpChannel.set(this.identifierChannel());
 
     try {
       await this.sendOtp();
@@ -348,7 +348,7 @@ export class LoginComponent implements OnDestroy {
     try {
       const result = await firstValueFrom(
         this.auth.verifyOtp({
-          channel: this.otpChannel,
+          channel: this.otpChannel(),
           identifier: this.identifier,
           code: this.otpForm.controls.code.value.trim(),
           purpose: this.otpPurpose(),
@@ -453,7 +453,7 @@ export class LoginComponent implements OnDestroy {
   private async sendOtp(): Promise<void> {
     await firstValueFrom(
       this.auth.sendOtp({
-        channel: this.otpChannel,
+        channel: this.otpChannel(),
         identifier: this.identifier,
         captchaToken: this.captchaToken()!,
         purpose: this.otpPurpose(),

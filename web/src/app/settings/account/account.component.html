@@ -59,6 +59,12 @@
                 [formGroup]="linkForm"
                 (ngSubmit)="submitLinkSend()"
               >
+                @if (linkChannel() === "phone") {
+                  <app-alert variant="info">
+                    {{ "auth.login.signup_phone_sms_notice" | translate }}
+                  </app-alert>
+                }
+
                 <app-form-field
                   [label]="
                     (linkChannel() === 'email'
