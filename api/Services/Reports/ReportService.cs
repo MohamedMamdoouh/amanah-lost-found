@@ -467,7 +467,7 @@ public sealed class ReportService(
                 "Please correct the errors in the form.",
                 errors: new Dictionary<string, string[]>
                 {
-                    ["photos"] = [$"At most {MaxPhotos} photos are allowed."],
+                    ["photos"] = [ErrorCodes.FieldPhotosMaxCount],
                 });
         }
 

@@ -41,7 +41,7 @@ public sealed class ReportPhotoAttachService(
                         ex.Code,
                         errors: new Dictionary<string, string[]>
                         {
-                            [$"photos[{sortOrder}]"] = [ex.Message],
+                            [$"photos[{sortOrder}]"] = [ex.Code],
                         });
                 }
 

@@ -60,7 +60,7 @@ public sealed class ChatAttachmentAttachService(
                 ex.Code,
                 errors: new Dictionary<string, string[]>
                 {
-                    ["photo"] = [ex.Message],
+                    ["photo"] = [ex.Code],
                 });
         }
 

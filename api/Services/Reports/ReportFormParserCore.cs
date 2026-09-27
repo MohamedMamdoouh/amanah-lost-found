@@ -57,7 +57,7 @@ public static class ReportFormParserCore
                 ErrorCodes.ValidationFailed,
                 new Dictionary<string, string[]>
                 {
-                    ["photos"] = [$"At most {MaxPhotos} photos are allowed."],
+                    ["photos"] = [ErrorCodes.FieldPhotosMaxCount],
                 });
         }
 
@@ -66,7 +66,7 @@ public static class ReportFormParserCore
         {
             if (photoFiles[index].Length == 0)
             {
-                photoErrors[$"photos[{index}]"] = ["Photo file is required."];
+                photoErrors[$"photos[{index}]"] = [ErrorCodes.FieldPhotoEmpty];
             }
         }
 

@@ -18,7 +18,7 @@ public sealed class ClaimSubmitFormParser
     {
         if (!request.HasFormContentType)
         {
-            return ClaimPartError("Claim submission must use multipart form data.");
+            return ClaimPartError(ErrorCodes.FieldClaimMultipartRequired);
         }
 
         var form = await request.ReadFormAsync(cancellationToken);
@@ -26,7 +26,7 @@ public sealed class ClaimSubmitFormParser
         var claimJson = form["claim"].FirstOrDefault()?.ToString();
         if (string.IsNullOrWhiteSpace(claimJson))
         {
-            return ClaimPartError("Claim data is required.");
+            return ClaimPartError(ErrorCodes.FieldClaimDataRequired);
         }
 
         SubmitClaimRequest? claimRequest;
@@ -38,12 +38,12 @@ public sealed class ClaimSubmitFormParser
         }
         catch (JsonException)
         {
-            return ClaimPartError("Claim data is invalid.");
+            return ClaimPartError(ErrorCodes.FieldClaimDataInvalid);
         }
 
         if (claimRequest is null)
         {
-            return ClaimPartError("Claim data is required.");
+            return ClaimPartError(ErrorCodes.FieldClaimDataRequired);
         }
 
         var photoFiles = form.Files.GetFiles("photo");
@@ -54,7 +54,7 @@ public sealed class ClaimSubmitFormParser
                 ErrorCodes.ValidationFailed,
                 new Dictionary<string, string[]>
                 {
-                    ["photo"] = ["At most one photo is allowed."],
+                    ["photo"] = [ErrorCodes.FieldPhotoMaxCount],
                 });
         }
 
@@ -66,19 +66,19 @@ public sealed class ClaimSubmitFormParser
                 ErrorCodes.ValidationFailed,
                 new Dictionary<string, string[]>
                 {
-                    ["photo"] = ["Photo file is required."],
+                    ["photo"] = [ErrorCodes.FieldPhotoEmpty],
                 });
         }
 
         return new ClaimSubmitForm(claimRequest, photo);
     }
 
-    private static ResultError ClaimPartError(string message) =>
+    private static ResultError ClaimPartError(string code) =>
         ResultError.BadRequest(
             "Please correct the errors in the form.",
             ErrorCodes.ValidationFailed,
             new Dictionary<string, string[]>
             {
-                ["claim"] = [message],
+                ["claim"] = [code],
             });
 }

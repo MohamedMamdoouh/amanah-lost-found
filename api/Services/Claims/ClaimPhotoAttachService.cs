@@ -30,7 +30,7 @@ public sealed class ClaimPhotoAttachService(
                 ex.Code,
                 errors: new Dictionary<string, string[]>
                 {
-                    ["photo"] = [ex.Message],
+                    ["photo"] = [ex.Code],
                 });
         }
 

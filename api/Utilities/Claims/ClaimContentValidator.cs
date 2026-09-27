@@ -1,5 +1,6 @@
 using Amanah.Api.Utilities.Common;
 using Amanah.Api.Utilities.Reports;
+using Amanah.Contracts.Errors;
 
 namespace Amanah.Api.Utilities.Claims;
 
@@ -18,17 +19,17 @@ public static class ClaimContentValidator
 
         if (normalized.Length < MinLength)
         {
-            messages.Add($"Answer must be at least {MinLength} characters.");
+            messages.Add(ErrorCodes.FieldSubmittedAnswerTooShort);
         }
 
         if (normalized.Length > MaxLength)
         {
-            messages.Add($"Answer cannot exceed {MaxLength} characters.");
+            messages.Add(ErrorCodes.FieldSubmittedAnswerTooLong);
         }
 
         if (ContactInfoDetector.ContainsContactInfo(normalized))
         {
-            messages.Add(ContactInfoDetector.ContactInfoMessage);
+            messages.Add(ErrorCodes.ClaimContactInfo);
         }
 
         if (messages.Count == 0)

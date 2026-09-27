@@ -1,5 +1,6 @@
 using Amanah.Api.Data.Entities;
 using Amanah.Api.Utilities.Common;
+using Amanah.Contracts.Errors;
 
 namespace Amanah.Api.Utilities.Reports;
 
@@ -33,12 +34,12 @@ public static class ReportDateValidator
 
         if (date > today)
         {
-            return "Date cannot be in the future.";
+            return ErrorCodes.FieldReportDateFuture;
         }
 
         if (date < oldestAllowed)
         {
-            return "Date cannot be more than 12 months ago.";
+            return ErrorCodes.FieldReportDateTooOld;
         }
 
         return null;
@@ -60,7 +61,7 @@ public static class CategoryFieldValidator
         {
             if (!definitionByKey.ContainsKey(fieldKey))
             {
-                ValidationErrors.Add(errors, fieldKey, "Unknown category field.");
+                ValidationErrors.Add(errors, fieldKey, ErrorCodes.FieldCategoryUnknown);
             }
         }
 
@@ -72,7 +73,7 @@ public static class CategoryFieldValidator
 
             if (definition.Required && normalized.Length == 0)
             {
-                ValidationErrors.Add(errors, definition.FieldKey, "This field is required.");
+                ValidationErrors.Add(errors, definition.FieldKey, ErrorCodes.FieldCategoryRequired);
                 continue;
             }
 
@@ -94,20 +95,20 @@ public static class CategoryFieldValidator
     {
         if (definition.MinLength is int minLength && normalized.Length < minLength)
         {
-            ValidationErrors.Add(errors, definition.FieldKey, $"Must be at least {minLength} characters.");
+            ValidationErrors.Add(errors, definition.FieldKey, ErrorCodes.FieldCategoryMinLength);
             return;
         }
 
         if (definition.MaxLength is int maxLength && normalized.Length > maxLength)
         {
-            ValidationErrors.Add(errors, definition.FieldKey, $"Must be at most {maxLength} characters.");
+            ValidationErrors.Add(errors, definition.FieldKey, ErrorCodes.FieldCategoryMaxLength);
             return;
         }
 
         if (definition.TextFormat == CategoryTextFormat.LettersAndSpaces
             && !normalized.All(character => char.IsLetter(character) || character == ' '))
         {
-            ValidationErrors.Add(errors, definition.FieldKey, "Must contain letters and spaces only.");
+            ValidationErrors.Add(errors, definition.FieldKey, ErrorCodes.FieldCategoryLettersAndSpaces);
         }
     }
 }
@@ -120,7 +121,7 @@ public static class ReportContentValidator
     public const string RewardAmountField = "rewardAmount";
     public const string HeldLocationField = "heldLocation";
 
-    private const int TitleMinLength = 10;
+    private const int TitleMinLength = 5;
     private const int TitleMaxLength = 80;
     private const int DescriptionMinLength = 20;
     private const int DescriptionMaxLength = 1000;
@@ -153,19 +154,19 @@ public static class ReportContentValidator
     {
         if (title.Length == 0)
         {
-            ValidationErrors.Add(errors, TitleField, "Title is required.");
+            ValidationErrors.Add(errors, TitleField, ErrorCodes.FieldReportTitleRequired);
             return;
         }
 
         if (title.Length < TitleMinLength)
         {
-            ValidationErrors.Add(errors, TitleField, $"Title must be at least {TitleMinLength} characters.");
+            ValidationErrors.Add(errors, TitleField, ErrorCodes.FieldReportTitleTooShort);
             return;
         }
 
         if (title.Length > TitleMaxLength)
         {
-            ValidationErrors.Add(errors, TitleField, $"Title must be at most {TitleMaxLength} characters.");
+            ValidationErrors.Add(errors, TitleField, ErrorCodes.FieldReportTitleTooLong);
         }
     }
 
@@ -173,19 +174,19 @@ public static class ReportContentValidator
     {
         if (description.Length == 0)
         {
-            ValidationErrors.Add(errors, DescriptionField, "Description is required.");
+            ValidationErrors.Add(errors, DescriptionField, ErrorCodes.FieldReportDescriptionRequired);
             return;
         }
 
         if (description.Length < DescriptionMinLength)
         {
-            ValidationErrors.Add(errors, DescriptionField, $"Description must be at least {DescriptionMinLength} characters.");
+            ValidationErrors.Add(errors, DescriptionField, ErrorCodes.FieldReportDescriptionTooShort);
             return;
         }
 
         if (description.Length > DescriptionMaxLength)
         {
-            ValidationErrors.Add(errors, DescriptionField, $"Description must be at most {DescriptionMaxLength} characters.");
+            ValidationErrors.Add(errors, DescriptionField, ErrorCodes.FieldReportDescriptionTooLong);
         }
     }
 
@@ -193,7 +194,7 @@ public static class ReportContentValidator
     {
         if (areaText is not null && areaText.Length > AreaTextMaxLength)
         {
-            ValidationErrors.Add(errors, AreaTextField, $"Area must be at most {AreaTextMaxLength} characters.");
+            ValidationErrors.Add(errors, AreaTextField, ErrorCodes.FieldReportAreaTooLong);
         }
     }
 
@@ -210,7 +211,7 @@ public static class ReportContentValidator
                 ValidationErrors.Add(
                     errors,
                     RewardAmountField,
-                    "A reward can only be offered on lost reports.");
+                    ErrorCodes.FieldReportRewardFoundOnly);
             }
 
             return;
@@ -220,7 +221,7 @@ public static class ReportContentValidator
         {
             if (rewardAmount is not int amount)
             {
-                ValidationErrors.Add(errors, RewardAmountField, "Reward amount is required when a reward is offered.");
+                ValidationErrors.Add(errors, RewardAmountField, ErrorCodes.FieldReportRewardRequired);
                 return;
             }
 
@@ -229,7 +230,7 @@ public static class ReportContentValidator
                 ValidationErrors.Add(
                     errors,
                     RewardAmountField,
-                    $"Reward amount must be between {RewardMinAmount} and {RewardMaxAmount} EGP.");
+                    ErrorCodes.FieldReportRewardRange);
             }
 
             return;
@@ -237,7 +238,7 @@ public static class ReportContentValidator
 
         if (rewardAmount is not null)
         {
-            ValidationErrors.Add(errors, RewardAmountField, "Reward amount must be empty when no reward is offered.");
+            ValidationErrors.Add(errors, RewardAmountField, ErrorCodes.FieldReportRewardEmpty);
         }
     }
 
@@ -250,7 +251,7 @@ public static class ReportContentValidator
         {
             if (!string.IsNullOrEmpty(heldLocation))
             {
-                ValidationErrors.Add(errors, HeldLocationField, "Held location is only allowed for found reports.");
+                ValidationErrors.Add(errors, HeldLocationField, ErrorCodes.FieldReportHeldLocationLostOnly);
             }
 
             return;
@@ -258,13 +259,13 @@ public static class ReportContentValidator
 
         if (string.IsNullOrEmpty(heldLocation))
         {
-            ValidationErrors.Add(errors, HeldLocationField, "Held location is required for found reports.");
+            ValidationErrors.Add(errors, HeldLocationField, ErrorCodes.FieldReportHeldLocationRequired);
             return;
         }
 
         if (heldLocation.Length > HeldLocationMaxLength)
         {
-            ValidationErrors.Add(errors, HeldLocationField, $"Held location must be at most {HeldLocationMaxLength} characters.");
+            ValidationErrors.Add(errors, HeldLocationField, ErrorCodes.FieldReportHeldLocationTooLong);
         }
     }
 }
@@ -308,6 +309,6 @@ public static class ContactInfoValidator
             return;
         }
 
-        errors[fieldKey] = [ContactInfoDetector.ContactInfoMessage];
+        errors[fieldKey] = [ErrorCodes.ReportContactInfo];
     }
 }
