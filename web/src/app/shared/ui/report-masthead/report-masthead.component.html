@@ -1,0 +1,18 @@
+<header class="report-masthead">
+  <a class="report-masthead__back" [routerLink]="backLink()">
+    <app-icon name="chevron" size="sm" class="report-masthead__back-icon" />
+    {{ backLabel() }}
+  </a>
+
+  <div class="report-masthead__panel">
+    <div class="report-masthead__meta">
+      <div class="chip-row report-masthead__chips">
+        <app-report-type-mark [type]="reportType()" />
+        @if (badgeLabel(); as badge) {
+          <app-badge [variant]="badgeVariant()">{{ badge }}</app-badge>
+        }
+      </div>
+    </div>
+    <h1 [id]="titleId()" class="report-masthead__title">{{ title() }}</h1>
+  </div>
+</header>

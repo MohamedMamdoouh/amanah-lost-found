@@ -1,0 +1,31 @@
+<div
+  class="app-dialog__overlay app-dialog__overlay--elevated"
+  (click)="onBackdropClick()"
+  (keydown.escape)="onBackdropClick()"
+>
+  <div
+    class="app-dialog"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-labelledby]="titleId()"
+    (click)="$event.stopPropagation()"
+  >
+    <header class="app-dialog__header">
+      <div class="app-dialog__icon app-dialog__icon--success" aria-hidden="true">
+        <app-icon name="check" size="md" />
+      </div>
+      <div class="app-dialog__heading">
+        <h2 [id]="titleId()" class="app-dialog__title">{{ title() }}</h2>
+        <p class="app-dialog__intro">{{ message() }}</p>
+        <p class="app-dialog__countdown" aria-live="polite">
+          {{ countdownText() }}
+        </p>
+      </div>
+    </header>
+    <div class="app-dialog__actions">
+      <app-button variant="primary" (clicked)="onCloseClick()">
+        {{ closeLabel() }}
+      </app-button>
+    </div>
+  </div>
+</div>
