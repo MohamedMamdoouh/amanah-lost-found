@@ -92,6 +92,7 @@ public class AuthValidationTests(ApiWebApplicationFactory factory) : IClassFixtu
 
         return new OtpSendTestContext(
             client,
+            OtpSendTestContext.CreateExplicitRefreshClient(factory),
             factory.SmsSender,
             factory.OtpEmailSender,
             factory.CaptchaVerifier,

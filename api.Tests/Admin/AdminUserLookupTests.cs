@@ -135,7 +135,7 @@ public class AdminUserLookupTests(ApiWebApplicationFactory factory) : IClassFixt
         await using var context = await ReportTestContext.CreateAsync(factory);
         await HttpTestHelpers.LoginAsAdminAsync(context);
 
-        var response = await context.Client.GetAsync("/api/v1/admin/users?searchBy=email&query=ahmed");
+        var response = await context.Client.GetAsync("/api/v1/admin/users?searchBy=invalid&query=ahmed");
         var error = await HttpTestHelpers.ReadErrorAsync(response);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);

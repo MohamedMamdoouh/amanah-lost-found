@@ -9,6 +9,7 @@ using Amanah.Contracts.Responses.Auth;
 using Amanah.Api.Services.Auth;
 using Amanah.Api.Services.External;
 using Amanah.Api.Tests.Auth.Fakes;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,12 +21,14 @@ public sealed class OtpSendTestContext : IAsyncDisposable
 
     public OtpSendTestContext(
         HttpClient client,
+        HttpClient explicitRefreshClient,
         RecordingSmsSender smsSender,
         RecordingOtpEmailSender emailSender,
         FakeCaptchaVerifier captchaVerifier,
         AsyncServiceScope scope)
     {
         Client = client;
+        ExplicitRefreshClient = explicitRefreshClient;
         SmsSender = smsSender;
         EmailSender = emailSender;
         CaptchaVerifier = captchaVerifier;
@@ -35,6 +38,8 @@ public sealed class OtpSendTestContext : IAsyncDisposable
     }
 
     public HttpClient Client { get; }
+
+    public HttpClient ExplicitRefreshClient { get; }
 
     public RecordingSmsSender SmsSender { get; }
 
@@ -172,7 +177,8 @@ public sealed class OtpSendTestContext : IAsyncDisposable
                 $"{RefreshTokenCookieManager.CookieName}={refreshToken}");
         }
 
-        var response = await Client.SendAsync(request);
+        var client = refreshToken is not null ? ExplicitRefreshClient : Client;
+        var response = await client.SendAsync(request);
 
         AuthSessionResponse? body = response.IsSuccessStatusCode
             ? await response.Content.ReadFromJsonAsync<AuthSessionResponse>()
@@ -180,6 +186,13 @@ public sealed class OtpSendTestContext : IAsyncDisposable
 
         return (response, body);
     }
+
+    public static HttpClient CreateExplicitRefreshClient<TEntry>(WebApplicationFactory<TEntry> factory)
+        where TEntry : class =>
+        factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            HandleCookies = false,
+        });
 
     public async Task<HttpResponseMessage> LogoutAsync(string accessToken)
     {

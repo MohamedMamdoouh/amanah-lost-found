@@ -21,8 +21,7 @@ public class CatalogSeedTests(ApiWebApplicationFactory factory) : IClassFixture<
     await RunWithSeededContextAsync(async context =>
     {
       var appliedMigrations = await context.Database.GetAppliedMigrationsAsync();
-      Assert.Contains("20260823215341_InitialAuth", appliedMigrations);
-      Assert.Contains("20260825211141_FullSchema", appliedMigrations);
+      Assert.Contains("20260925001831_Initial", appliedMigrations);
     });
   }
 
@@ -112,6 +111,7 @@ public class CatalogSeedTests(ApiWebApplicationFactory factory) : IClassFixture<
 
     await using var authContext = new OtpSendTestContext(
       client,
+      OtpSendTestContext.CreateExplicitRefreshClient(factory),
       factory.SmsSender,
       factory.OtpEmailSender,
       factory.CaptchaVerifier,
@@ -158,6 +158,7 @@ public class CatalogSeedTests(ApiWebApplicationFactory factory) : IClassFixture<
 
     await using var authContext = new OtpSendTestContext(
       client,
+      OtpSendTestContext.CreateExplicitRefreshClient(factory),
       factory.SmsSender,
       factory.OtpEmailSender,
       factory.CaptchaVerifier,

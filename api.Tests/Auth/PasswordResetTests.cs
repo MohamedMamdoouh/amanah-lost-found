@@ -176,6 +176,7 @@ public class PasswordResetTests(ApiWebApplicationFactory factory) : IClassFixtur
 
         return new OtpSendTestContext(
             client,
+            OtpSendTestContext.CreateExplicitRefreshClient(factory),
             factory.SmsSender,
             factory.OtpEmailSender,
             factory.CaptchaVerifier,

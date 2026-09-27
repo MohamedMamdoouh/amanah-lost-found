@@ -39,8 +39,6 @@ public class ApiWebApplicationFactory : WebApplicationFactory<ApiAssemblyMarker>
                 ["RateLimit:Policies:otp-send:WindowSeconds"] = "3600",
                 ["Otp:OutboxPollIntervalSeconds"] = "1",
                 ["Database:AutoMigrate"] = "false",
-                ["Otp:HourlySendLimit"] = "1000",
-                ["Otp:DailySendLimit"] = "1000",
                 ["Otp:CooldownSeconds"] = "0",
                 ["ADMIN_PHONE"] = "+201011111111",
                 ["ADMIN_PASSWORD"] = "AdminPass123",

@@ -79,6 +79,12 @@ public sealed class AdminAlertEmailOutboxDispatcher(
             await transaction.CommitAsync(cancellationToken);
             return false;
         }
+        catch (Exception exception)
+        {
+            await MarkFailedAsync(message, exception.Message, cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+            return false;
+        }
 
         var now = timeProvider.GetUtcNow();
         message.Status = AdminAlertEmailOutboxStatus.Sent;

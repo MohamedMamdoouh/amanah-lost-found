@@ -79,6 +79,7 @@ public sealed class ReportTestContext : IAsyncDisposable
 
         var authContext = new OtpSendTestContext(
             client,
+            OtpSendTestContext.CreateExplicitRefreshClient(factory),
             factory.SmsSender,
             factory.OtpEmailSender,
             factory.CaptchaVerifier,

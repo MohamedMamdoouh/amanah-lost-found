@@ -6,8 +6,9 @@ using Amanah.Contracts.Errors;
 
 using Amanah.Api.Tests.Infrastructure;
 
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
-
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 
@@ -16,7 +17,7 @@ namespace Amanah.Api.Tests.Auth;
 
 
 
-public class OtpSendTests(ApiWebApplicationFactory factory) : IClassFixture<ApiWebApplicationFactory>
+public class OtpSendTests(OtpSendWebApplicationFactory factory) : IClassFixture<OtpSendWebApplicationFactory>
 
 {
 
@@ -457,6 +458,7 @@ public class OtpSendTests(ApiWebApplicationFactory factory) : IClassFixture<ApiW
 
         return new OtpSendTestContext(
             factory.CreateClient(),
+            OtpSendTestContext.CreateExplicitRefreshClient(factory),
             factory.SmsSender,
             factory.OtpEmailSender,
             factory.CaptchaVerifier,
@@ -464,6 +466,22 @@ public class OtpSendTests(ApiWebApplicationFactory factory) : IClassFixture<ApiW
 
     }
 
+}
+
+public sealed class OtpSendWebApplicationFactory : ApiWebApplicationFactory
+{
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    {
+        base.ConfigureWebHost(builder);
+
+        builder.ConfigureAppConfiguration((_, config) =>
+        {
+            config.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Otp:CooldownSeconds"] = "120",
+            });
+        });
+    }
 }
 
 

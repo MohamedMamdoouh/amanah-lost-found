@@ -7,7 +7,7 @@ public class ArabicNormalizerTests
     [Fact]
     public void NormalizeForSearch_treats_alef_variants_as_equivalent()
     {
-        var withHamza = ArabicNormalizer.NormalizeForSearch("Ahmed");
+        var withHamza = ArabicNormalizer.NormalizeForSearch("أحمد");
         var bareAlef = ArabicNormalizer.NormalizeForSearch("احمد");
 
         Assert.Equal(bareAlef, withHamza);

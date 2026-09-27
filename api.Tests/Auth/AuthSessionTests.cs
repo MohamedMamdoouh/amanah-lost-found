@@ -339,6 +339,7 @@ public class AuthSessionTests(ApiWebApplicationFactory factory) : IClassFixture<
 
         return new OtpSendTestContext(
             client,
+            OtpSendTestContext.CreateExplicitRefreshClient(factory),
             factory.SmsSender,
             factory.OtpEmailSender,
             factory.CaptchaVerifier,

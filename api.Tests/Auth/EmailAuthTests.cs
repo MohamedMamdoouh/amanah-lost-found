@@ -180,6 +180,7 @@ public class EmailAuthTests(ApiWebApplicationFactory factory) : IClassFixture<Ap
         var scope = factory.Services.CreateAsyncScope();
         return new OtpSendTestContext(
             factory.CreateClient(),
+            OtpSendTestContext.CreateExplicitRefreshClient(factory),
             factory.SmsSender,
             factory.OtpEmailSender,
             factory.CaptchaVerifier,
