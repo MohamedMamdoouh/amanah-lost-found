@@ -19,6 +19,7 @@ export type CategoryFieldFormGroup = FormGroup<{
   imports: [FormFieldComponent, ReactiveFormsModule, TranslateModule],
   templateUrl: './category-field-form.component.html',
   styleUrl: './category-field-form.component.scss',
+  host: { class: 'category-field-form' },
 })
 export class CategoryFieldFormComponent {
   private readonly translate = inject(TranslateService);

@@ -1,39 +1,57 @@
-<section class="abuse-queue">
-  <app-page-header
-    [title]="'admin.abuse.queue.title' | translate"
-    [intro]="'admin.abuse.queue.intro' | translate"
-  >
-    @if (openCount() > 0) {
-      <app-badge variant="pending">
-        {{ "admin.abuse.queue.open_badge" | translate: { count: openCount() } }}
-      </app-badge>
-    }
-  </app-page-header>
-
-  @if (loading()) {
-    <app-loading-indicator [label]="'admin.abuse.queue.loading' | translate" />
-  } @else if (error()) {
-    <app-alert variant="error">{{ error() }}</app-alert>
-  } @else if (items().length === 0) {
-    <app-empty-state [title]="'admin.abuse.queue.empty' | translate" />
-  } @else {
-    <ul class="abuse-queue__list">
-      @for (item of items(); track item.id) {
-        <li>
-          <app-listing-card
-            [title]="item.reportTitle"
-            [reportType]="item.reportType"
-            [subtitle]="queueSubtitle(item)"
-            [date]="(item.createdAt | appDate) ?? ''"
-            [badgeLabel]="domainLabels.reportBadgeLabel(item.reportStatus, 'mine')"
-            [badgeVariant]="
-              domainLabels.reportBadgeVariant(item.reportStatus, 'mine')
-            "
-            [routerLink]="['/admin/abuse', item.id]"
-            [actionLabel]="'admin.abuse.queue.review' | translate"
-          />
-        </li>
+<section class="admin-page abuse-queue" aria-labelledby="abuse-queue-title">
+  <div class="admin-page__head">
+    <app-page-header
+      [title]="'admin.abuse.queue.title' | translate"
+      [intro]="'admin.abuse.queue.intro' | translate"
+    >
+      @if (openCount() > 0) {
+        <div
+          class="admin-page__stat"
+          role="status"
+          aria-live="polite"
+          [attr.aria-label]="
+            'admin.abuse.queue.open_badge' | translate: { count: openCount() }
+          "
+        >
+          <span class="admin-page__stat-value">{{ openCount() }}</span>
+          <span class="admin-page__stat-label">{{
+            'admin.abuse.queue.open_label' | translate
+          }}</span>
+        </div>
       }
-    </ul>
-  }
+    </app-page-header>
+  </div>
+
+  <div class="admin-page__body">
+    @if (loading()) {
+      <app-loading-indicator [label]="'admin.abuse.queue.loading' | translate" />
+    } @else if (error()) {
+      <app-alert variant="error">{{ error() }}</app-alert>
+    } @else if (items().length === 0) {
+      <app-empty-state [title]="'admin.abuse.queue.empty' | translate" />
+    } @else {
+      <ul class="admin-page__list">
+        @for (item of items(); track item.id) {
+          <li>
+            <app-listing-card
+              [title]="item.reportTitle"
+              [reportType]="item.reportType"
+              [subtitleLead]="queueReason(item)"
+              [subtitle]="queueFlagger(item)"
+              subtitleIcon="person"
+              [date]="(item.createdAt | appDate) ?? ''"
+              [badgeLabel]="
+                domainLabels.reportBadgeLabel(item.reportStatus, 'mine')
+              "
+              [badgeVariant]="
+                domainLabels.reportBadgeVariant(item.reportStatus, 'mine')
+              "
+              [routerLink]="['/admin/abuse', item.id]"
+              [actionLabel]="'admin.abuse.queue.review' | translate"
+            />
+          </li>
+        }
+      </ul>
+    }
+  </div>
 </section>

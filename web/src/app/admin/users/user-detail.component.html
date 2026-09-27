@@ -1,129 +1,221 @@
-<section
-  class="user-detail page-container--wide"
-  aria-labelledby="user-detail-title"
->
+<section class="admin-page user-detail" aria-labelledby="user-detail-title">
   @if (loading()) {
-    <app-loading-indicator [label]="'admin.users.loading' | translate" />
+    <div class="admin-page__body">
+      <app-loading-indicator [label]="'admin.users.loading' | translate" />
+    </div>
   } @else if (loadError()) {
-    <app-alert variant="error">{{ loadError() }}</app-alert>
+    <div class="admin-page__body">
+      <app-alert variant="error">{{ loadError() }}</app-alert>
+    </div>
   } @else if (user()) {
     @let detail = user()!;
-    <app-page-header
-      [backLink]="'/admin/users'"
-      [backLabel]="'admin.users.back' | translate"
-      [title]="detail.displayName"
-      [intro]="'admin.users.detail_title' | translate"
-    >
-      @if (detail.isBanned) {
-        <app-badge variant="rejected">
-          {{ "admin.users.banned_yes" | translate }}
-        </app-badge>
-      }
-    </app-page-header>
+    <div class="admin-page__head user-detail__head">
+      <app-page-header
+        titleId="user-detail-title"
+        [backLink]="'/admin/users'"
+        [backLabel]="'admin.users.back' | translate"
+        [title]="detail.displayName"
+      />
 
-    @if (actionSuccess()) {
-      <app-alert variant="success">{{ actionSuccess() }}</app-alert>
-    }
-    @if (actionError()) {
-      <app-alert variant="error">{{ actionError() }}</app-alert>
-    }
-
-    <app-card variant="flat" padding="md">
-      <dl class="user-detail__fields">
-        <div>
-          <dt>{{ "admin.users.field_display_name" | translate }}</dt>
-          <dd>{{ detail.displayName }}</dd>
-        </div>
-        <div>
-          <dt>{{ "admin.users.field_phone" | translate }}</dt>
-          <dd dir="ltr">{{ detail.normalizedPhone ?? "—" }}</dd>
-        </div>
-        <div>
-          <dt>{{ "admin.users.field_email" | translate }}</dt>
-          <dd dir="ltr">{{ detail.normalizedEmail ?? "—" }}</dd>
-        </div>
-        <div>
-          <dt>{{ "admin.users.field_role" | translate }}</dt>
-          <dd>{{ detail.role }}</dd>
-        </div>
-        <div>
-          <dt>{{ "admin.users.field_reports_count" | translate }}</dt>
-          <dd>{{ detail.reportsCount }}</dd>
-        </div>
-        <div>
-          <dt>{{ "admin.users.field_created_at" | translate }}</dt>
-          <dd>{{ detail.createdAt | appDate }}</dd>
-        </div>
-        <div>
-          <dt>{{ "admin.users.ban_status" | translate }}</dt>
-          <dd>
+      <ul
+        class="user-detail__contact"
+        [attr.aria-label]="'admin.users.contact_label' | translate"
+      >
+        <li>
+          @if (detail.normalizedPhone) {
+            <a
+              class="user-detail__chip"
+              [href]="'tel:' + detail.normalizedPhone"
+            >
+              <span class="user-detail__chip-kind">{{
+                "admin.users.field_phone" | translate
+              }}</span>
+              <span class="user-detail__chip-value" dir="ltr">{{
+                detail.normalizedPhone
+              }}</span>
+            </a>
+          } @else {
+            <span class="user-detail__chip user-detail__chip--muted">
+              <span class="user-detail__chip-kind">{{
+                "admin.users.field_phone" | translate
+              }}</span>
+              —
+            </span>
+          }
+        </li>
+        <li>
+          @if (detail.normalizedEmail) {
+            <a
+              class="user-detail__chip"
+              [href]="'mailto:' + detail.normalizedEmail"
+            >
+              <span class="user-detail__chip-kind">{{
+                "admin.users.field_email" | translate
+              }}</span>
+              <span class="user-detail__chip-value" dir="ltr">{{
+                detail.normalizedEmail
+              }}</span>
+            </a>
+          } @else {
+            <span class="user-detail__chip user-detail__chip--muted">
+              <span class="user-detail__chip-kind">{{
+                "admin.users.field_email" | translate
+              }}</span>
+              —
+            </span>
+          }
+        </li>
+        <li>
+          <span
+            class="user-detail__chip user-detail__chip--status"
+            [class.user-detail__chip--banned]="detail.isBanned"
+            [attr.aria-label]="'admin.users.ban_status' | translate"
+          >
             @if (detail.isBanned) {
               {{ "admin.users.banned_yes" | translate }}
             } @else {
-              {{ "admin.users.banned_no" | translate }}
+              {{ "admin.users.account_active" | translate }}
             }
-          </dd>
-        </div>
-        @if (detail.isBanned && detail.banReason) {
-          <div>
-            <dt>{{ "admin.users.ban_reason" | translate }}</dt>
-            <dd>{{ detail.banReason }}</dd>
-          </div>
-        }
-        @if (detail.isBanned && detail.bannedAt) {
-          <div>
-            <dt>{{ "admin.users.banned_at" | translate }}</dt>
-            <dd>{{ detail.bannedAt | appDate }}</dd>
-          </div>
-        }
-      </dl>
-    </app-card>
-
-    <div class="user-detail__actions">
-      @if (!detail.isBanned) {
-        <app-form-field
-          [label]="'admin.users.ban_reason_label' | translate"
-          htmlFor="ban-reason"
-        >
-          <textarea
-            id="ban-reason"
-            class="user-detail__textarea"
-            rows="3"
-            [formControl]="banReasonControl"
-            [placeholder]="'admin.users.ban_reason_placeholder' | translate"
-          ></textarea>
-        </app-form-field>
-        <app-button
-          variant="danger"
-          [disabled]="banReasonControl.invalid || banning()"
-          (clicked)="openBanConfirm()"
-        >
-          {{ "admin.users.ban_action" | translate }}
-        </app-button>
-      } @else {
-        <app-button
-          variant="secondary"
-          [disabled]="unbanning()"
-          (clicked)="openUnbanConfirm()"
-        >
-          {{ "admin.users.unban_action" | translate }}
-        </app-button>
-      }
+          </span>
+        </li>
+      </ul>
     </div>
 
-    @if (showBanConfirm()) {
-      <app-confirm-dialog
-        titleId="ban-user-title"
-        [title]="'admin.users.ban_confirm_title' | translate"
-        [intro]="'admin.users.ban_confirm_intro' | translate"
-        [cancelLabel]="'admin.users.cancel' | translate"
-        [confirmLabel]="'admin.users.ban_confirm' | translate"
-        confirmVariant="danger"
-        [loading]="banning()"
-        [disabled]="banning()"
-        (cancelled)="closeBanConfirm()"
-        (confirmed)="confirmBan()"
-      />
+    <div class="admin-page__body">
+      @if (actionError()) {
+        <app-alert variant="error">{{ actionError() }}</app-alert>
+      }
+
+      <div class="user-detail__tiles">
+        <article class="user-detail__tile user-detail__tile--metric">
+          <p class="user-detail__tile-label">
+            {{ "admin.users.field_reports_count" | translate }}
+          </p>
+          <p class="user-detail__metric">{{ detail.reportsCount }}</p>
+        </article>
+        <article class="user-detail__tile">
+          <p class="user-detail__tile-label">
+            {{ "admin.users.field_role" | translate }}
+          </p>
+          <p class="user-detail__tile-value">{{ roleLabel(detail.role) }}</p>
+        </article>
+        <article class="user-detail__tile">
+          <p class="user-detail__tile-label">
+            {{ "admin.users.field_created_at" | translate }}
+          </p>
+          <p class="user-detail__tile-value">
+            {{ detail.createdAt | appDate }}
+          </p>
+        </article>
+      </div>
+
+      @if (detail.isBanned) {
+        <aside
+          class="user-detail__ban-record"
+          [attr.aria-label]="'admin.users.ban_status' | translate"
+        >
+          <div class="user-detail__ban-record-head">
+            <span class="user-detail__ban-record-icon" aria-hidden="true">
+              <app-icon name="shield" size="sm" />
+            </span>
+            <h2 class="user-detail__ban-record-title">
+              {{ "admin.users.ban_record_title" | translate }}
+            </h2>
+          </div>
+          @if (detail.banReason) {
+            <p class="user-detail__ban-record-reason">{{ detail.banReason }}</p>
+          }
+          @if (detail.bannedAt) {
+            <p class="user-detail__ban-record-meta">
+              {{ "admin.users.banned_at" | translate }}:
+              {{ detail.bannedAt | appDate }}
+            </p>
+          }
+        </aside>
+      }
+
+      <div class="user-detail__actions">
+        @if (!detail.isBanned) {
+          <app-button variant="danger" (clicked)="openBanDialog()">
+            {{ "admin.users.ban_action" | translate }}
+          </app-button>
+        } @else {
+          <app-button variant="secondary" (clicked)="openUnbanConfirm()">
+            {{ "admin.users.unban_action" | translate }}
+          </app-button>
+        }
+      </div>
+    </div>
+
+    @if (showBanDialog()) {
+      <div
+        class="app-dialog__overlay"
+        (click)="closeBanDialog()"
+        (keydown.escape)="closeBanDialog()"
+      >
+        <div
+          class="app-dialog"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="ban-user-dialog-title"
+          (click)="$event.stopPropagation()"
+        >
+          <header class="app-dialog__header">
+            <div class="app-dialog__icon app-dialog__icon--danger" aria-hidden="true">
+              <app-icon name="shield" size="md" />
+            </div>
+            <div class="app-dialog__heading">
+              <h2 id="ban-user-dialog-title" class="app-dialog__title">
+                {{ "admin.users.ban_confirm_title" | translate }}
+              </h2>
+              <p class="app-dialog__intro">
+                {{ "admin.users.ban_confirm_intro" | translate }}
+              </p>
+            </div>
+          </header>
+
+          @if (banDialogError()) {
+            <app-alert variant="error">{{ banDialogError() }}</app-alert>
+          }
+
+          <form
+            class="user-detail__ban-form"
+            (ngSubmit)="submitBanDialog()"
+          >
+            <label class="form-field">
+              <span class="form-label">{{
+                "admin.users.ban_reason_label" | translate
+              }}</span>
+              <textarea
+                id="ban-reason"
+                class="form-textarea"
+                rows="3"
+                [formControl]="banReasonControl"
+                [placeholder]="'admin.users.ban_reason_placeholder' | translate"
+              ></textarea>
+            </label>
+
+            <div class="app-dialog__actions">
+              <app-button
+                type="button"
+                variant="ghost"
+                [disabled]="banning()"
+                (clicked)="closeBanDialog()"
+              >
+                {{ "admin.users.cancel" | translate }}
+              </app-button>
+              <app-button
+                type="submit"
+                variant="danger"
+                [loading]="banning()"
+                [disabled]="banning() || banReasonControl.invalid"
+              >
+                {{ "admin.users.ban_confirm" | translate }}
+              </app-button>
+            </div>
+          </form>
+        </div>
+      </div>
     }
 
     @if (showUnbanConfirm()) {
@@ -138,6 +230,17 @@
         [disabled]="unbanning()"
         (cancelled)="closeUnbanConfirm()"
         (confirmed)="confirmUnban()"
+      />
+    }
+
+    @if (actionFeedback(); as feedback) {
+      <app-action-feedback-dialog
+        titleId="user-detail-action-feedback-title"
+        [title]="feedback.title"
+        [message]="feedback.message"
+        [closeLabel]="'common.dialog.close_now' | translate"
+        [countdownLabel]="'common.dialog.auto_close' | translate"
+        (closed)="closeActionFeedback()"
       />
     }
   }

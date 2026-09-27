@@ -1,264 +1,497 @@
-<section class="categories-admin page-container--wide">
-  <app-page-header
-    [title]="'admin.categories.title' | translate"
-    [intro]="'admin.categories.intro' | translate"
-  />
+<section
+  class="admin-page categories-admin"
+  aria-labelledby="categories-admin-title"
+>
+  <div class="admin-page__head">
+    <app-page-header
+      titleId="categories-admin-title"
+      [title]="'admin.categories.title' | translate"
+      [intro]="'admin.categories.intro' | translate"
+    >
+      @if (!loading()) {
+        <div class="categories-admin__head-actions">
+          <div
+            class="admin-page__stat"
+            role="status"
+            [attr.aria-label]="
+              'admin.categories.count_badge'
+                | translate: { count: categories().length }
+            "
+          >
+            <span class="admin-page__stat-value">{{
+              categories().length
+            }}</span>
+            <span class="admin-page__stat-label">{{
+              "admin.categories.count_label" | translate
+            }}</span>
+          </div>
+          <app-button variant="primary" (clicked)="openAddCategory()">
+            {{ "admin.categories.add" | translate }}
+          </app-button>
+        </div>
+      }
+    </app-page-header>
+  </div>
 
-  @if (successMessage()) {
-    <app-alert variant="success">{{ successMessage() }}</app-alert>
-  }
+  <div class="admin-page__body">
+    @if (successMessage()) {
+      <app-alert variant="success">{{ successMessage() }}</app-alert>
+    }
 
-  @if (error()) {
-    <app-alert variant="error">{{ error() }}</app-alert>
-  }
+    @if (error()) {
+      <app-alert variant="error">{{ error() }}</app-alert>
+    }
 
-  <div class="categories-admin__toolbar">
-    <app-button (clicked)="toggleAddCategory()">
-      {{
-        showAddCategory()
-          ? ("admin.categories.cancel_add" | translate)
-          : ("admin.categories.add" | translate)
-      }}
-    </app-button>
+    @if (loading()) {
+      <app-loading-indicator [label]="'admin.categories.loading' | translate" />
+    } @else if (categories().length === 0) {
+      <app-empty-state
+        [inset]="true"
+        icon="tag"
+        [title]="'admin.categories.empty' | translate"
+        [description]="'admin.categories.empty_desc' | translate"
+      />
+    } @else {
+      <ul class="categories-admin__stack">
+        @for (category of categories(); track category.id) {
+          <li>
+            <article class="categories-admin__panel">
+              <header class="categories-admin__panel-head">
+                <div class="categories-admin__panel-lead">
+                  <span
+                    class="categories-admin__panel-icon"
+                    aria-hidden="true"
+                  >
+                    <app-icon name="tag" size="sm" />
+                  </span>
+                  <div>
+                    <h2 class="categories-admin__panel-title">
+                      {{ categoryLabel(category.code) }}
+                    </h2>
+                    <p class="categories-admin__panel-meta">
+                      <code>{{ category.code }}</code>
+                      <span class="categories-admin__panel-meta-sep">·</span>
+                      {{ "admin.categories.sort_order" | translate }}:
+                      {{ category.sortOrder }}
+                    </p>
+                  </div>
+                </div>
+                <div class="categories-admin__badges">
+                  @if (!category.isActive) {
+                    <app-badge variant="neutral">{{
+                      "admin.categories.inactive" | translate
+                    }}</app-badge>
+                  }
+                  @if (category.photosPrivate) {
+                    <app-badge variant="pending">{{
+                      "admin.categories.photos_private" | translate
+                    }}</app-badge>
+                  }
+                </div>
+              </header>
+
+              <div class="categories-admin__item-actions">
+                <app-button
+                  variant="outline"
+                  size="sm"
+                  (clicked)="startEditCategory(category)"
+                >
+                  {{ "admin.categories.edit" | translate }}
+                </app-button>
+                <app-button
+                  variant="outline"
+                  size="sm"
+                  (clicked)="startAddField(category)"
+                >
+                  {{ "admin.categories.add_field" | translate }}
+                </app-button>
+              </div>
+
+              <section
+                class="categories-admin__fields"
+                [attr.aria-label]="'admin.categories.fields' | translate"
+              >
+                <h3 class="categories-admin__fields-title">
+                  {{ "admin.categories.fields" | translate }}
+                </h3>
+
+                @if (category.fieldDefinitions.length === 0) {
+                  <p class="categories-admin__empty-fields">
+                    {{ "admin.categories.no_fields" | translate }}
+                  </p>
+                } @else {
+                  <ul class="categories-admin__field-list">
+                    @for (field of category.fieldDefinitions; track field.id) {
+                      <li class="categories-admin__field-row">
+                        <div class="categories-admin__field-summary">
+                          <div class="categories-admin__field-main">
+                            <p class="categories-admin__field-name">
+                              {{ fieldLabel(category.code, field.fieldKey) }}
+                            </p>
+                            <ul class="categories-admin__field-tags">
+                              <li>
+                                <span
+                                  class="categories-admin__field-tag categories-admin__field-tag--code"
+                                >
+                                  <code>{{ field.fieldKey }}</code>
+                                </span>
+                              </li>
+                              <li>
+                                <span class="categories-admin__field-tag">
+                                  {{
+                                    "admin.categories.sort_order" | translate
+                                  }}:
+                                  {{ field.sortOrder }}
+                                </span>
+                              </li>
+                              @if (field.required) {
+                                <li>
+                                  <span
+                                    class="categories-admin__field-tag categories-admin__field-tag--required"
+                                  >
+                                    {{
+                                      "admin.categories.required" | translate
+                                    }}
+                                  </span>
+                                </li>
+                              }
+                              @if (
+                                field.minLength !== null &&
+                                field.minLength !== undefined
+                              ) {
+                                <li>
+                                  <span class="categories-admin__field-tag">
+                                    min {{ field.minLength }}
+                                  </span>
+                                </li>
+                              }
+                              @if (
+                                field.maxLength !== null &&
+                                field.maxLength !== undefined
+                              ) {
+                                <li>
+                                  <span class="categories-admin__field-tag">
+                                    max {{ field.maxLength }}
+                                  </span>
+                                </li>
+                              }
+                              @if (field.textFormat) {
+                                <li>
+                                  <span class="categories-admin__field-tag">
+                                    {{ textFormatLabel(field.textFormat) }}
+                                  </span>
+                                </li>
+                              }
+                            </ul>
+                          </div>
+                          <app-button
+                            class="categories-admin__field-edit"
+                            variant="outline"
+                            size="sm"
+                            (clicked)="startEditField(category, field)"
+                          >
+                            {{ "admin.categories.edit" | translate }}
+                          </app-button>
+                        </div>
+                      </li>
+                    }
+                  </ul>
+                }
+              </section>
+            </article>
+          </li>
+        }
+      </ul>
+    }
   </div>
 
   @if (showAddCategory()) {
-    <app-card class="categories-admin__form-card">
-      <h2 class="categories-admin__section-title">
-        {{ "admin.categories.add_title" | translate }}
-      </h2>
-      <form
-        class="categories-admin__form"
-        [formGroup]="addCategoryForm"
-        (ngSubmit)="submitAddCategory()"
+    <div
+      class="app-dialog__overlay"
+      (click)="closeOpenDialogs()"
+      (keydown.escape)="closeOpenDialogs()"
+    >
+      <div
+        class="app-dialog app-dialog--scrollable"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="categories-add-dialog-title"
+        (click)="$event.stopPropagation()"
       >
-        <app-form-field
-          [label]="'admin.categories.code' | translate"
-          [required]="true"
+        <header class="app-dialog__header">
+          <div class="app-dialog__icon" aria-hidden="true">
+            <app-icon name="tag" size="md" />
+          </div>
+          <div class="app-dialog__heading">
+            <h2 id="categories-add-dialog-title" class="app-dialog__title">
+              {{ "admin.categories.add_title" | translate }}
+            </h2>
+            <p class="app-dialog__intro">
+              {{ "admin.categories.intro" | translate }}
+            </p>
+          </div>
+        </header>
+        @if (error()) {
+          <app-alert variant="error">{{ error() }}</app-alert>
+        }
+        <form
+          class="categories-admin__dialog-form"
+          [formGroup]="addCategoryForm"
+          (ngSubmit)="submitAddCategory()"
         >
-          <input class="form-input" formControlName="code" autocomplete="off" />
-        </app-form-field>
-        <app-form-field
-          [label]="'admin.categories.sort_order' | translate"
-          [required]="true"
-        >
-          <input
-            class="form-input"
-            type="number"
-            formControlName="sortOrder"
-            min="0"
-          />
-        </app-form-field>
-        <label class="categories-admin__checkbox">
-          <input type="checkbox" formControlName="photosPrivate" />
-          <span>{{ "admin.categories.photos_private" | translate }}</span>
-        </label>
-        <label class="categories-admin__checkbox">
-          <input type="checkbox" formControlName="isActive" />
-          <span>{{ "admin.categories.active" | translate }}</span>
-        </label>
-        <app-button type="submit" [loading]="saving()">
-          {{ "admin.categories.save" | translate }}
-        </app-button>
-      </form>
-    </app-card>
+          <app-form-field
+            [label]="'admin.categories.code' | translate"
+            [required]="true"
+          >
+            <input class="form-input" formControlName="code" autocomplete="off" />
+          </app-form-field>
+          <app-form-field
+            [label]="'admin.categories.sort_order' | translate"
+            [required]="true"
+          >
+            <input
+              class="form-input"
+              type="number"
+              formControlName="sortOrder"
+              min="0"
+            />
+          </app-form-field>
+          <label class="categories-admin__checkbox">
+            <input type="checkbox" formControlName="photosPrivate" />
+            <span>{{ "admin.categories.photos_private" | translate }}</span>
+          </label>
+          <label class="categories-admin__checkbox">
+            <input type="checkbox" formControlName="isActive" />
+            <span>{{ "admin.categories.active" | translate }}</span>
+          </label>
+          <div class="app-dialog__actions">
+            <app-button
+              type="button"
+              variant="ghost"
+              [disabled]="saving()"
+              (clicked)="closeAddCategory()"
+            >
+              {{ "admin.categories.cancel" | translate }}
+            </app-button>
+            <app-button type="submit" [loading]="saving()" [disabled]="saving()">
+              {{ "admin.categories.save" | translate }}
+            </app-button>
+          </div>
+        </form>
+      </div>
+    </div>
   }
 
-  @if (loading()) {
-    <app-loading-indicator [label]="'admin.categories.loading' | translate" />
-  } @else {
-    <div class="categories-admin__list">
-      @for (category of categories(); track category.id) {
-        <app-card class="categories-admin__item">
-          <div class="categories-admin__item-header">
-            <div>
-              <h2 class="categories-admin__item-title">
-                {{ categoryLabel(category.code) }}
+  @if (editingCategoryId(); as categoryId) {
+    @if (findCategory(categoryId); as category) {
+      <div
+        class="app-dialog__overlay"
+        (click)="closeOpenDialogs()"
+        (keydown.escape)="closeOpenDialogs()"
+      >
+        <div
+          class="app-dialog app-dialog--scrollable"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="categories-edit-dialog-title"
+          (click)="$event.stopPropagation()"
+        >
+          <header class="app-dialog__header">
+            <div class="app-dialog__icon" aria-hidden="true">
+              <app-icon name="tag" size="md" />
+            </div>
+            <div class="app-dialog__heading">
+              <h2 id="categories-edit-dialog-title" class="app-dialog__title">
+                {{ "admin.categories.edit_category_title" | translate }}
               </h2>
-              <p class="categories-admin__item-meta">
-                <code>{{ category.code }}</code>
-                · {{ "admin.categories.sort_order" | translate }}:
-                {{ category.sortOrder }}
+              <p class="app-dialog__intro">
+                {{ categoryLabel(category.code) }}
               </p>
             </div>
-            <div class="categories-admin__badges">
-              @if (!category.isActive) {
-                <app-badge variant="neutral">{{
-                  "admin.categories.inactive" | translate
-                }}</app-badge>
-              }
-              @if (category.photosPrivate) {
-                <app-badge variant="pending">{{
-                  "admin.categories.photos_private" | translate
-                }}</app-badge>
-              }
-            </div>
-          </div>
-
-          @if (editingCategoryId() === category.id) {
-            <form
-              class="categories-admin__form"
-              [formGroup]="editCategoryForm"
-              (ngSubmit)="submitEditCategory(category.id)"
+          </header>
+          @if (error()) {
+            <app-alert variant="error">{{ error() }}</app-alert>
+          }
+          <form
+            class="categories-admin__dialog-form"
+            [formGroup]="editCategoryForm"
+            (ngSubmit)="submitEditCategory(category.id)"
+          >
+            <app-form-field
+              [label]="'admin.categories.code' | translate"
+              [required]="true"
             >
-              <app-form-field
-                [label]="'admin.categories.code' | translate"
-                [required]="true"
+              <input
+                class="form-input"
+                formControlName="code"
+                autocomplete="off"
+              />
+            </app-form-field>
+            <app-form-field
+              [label]="'admin.categories.sort_order' | translate"
+              [required]="true"
+            >
+              <input
+                class="form-input"
+                type="number"
+                formControlName="sortOrder"
+                min="0"
+              />
+            </app-form-field>
+            <label class="categories-admin__checkbox">
+              <input type="checkbox" formControlName="photosPrivate" />
+              <span>{{ "admin.categories.photos_private" | translate }}</span>
+            </label>
+            <label class="categories-admin__checkbox">
+              <input type="checkbox" formControlName="isActive" />
+              <span>{{ "admin.categories.active" | translate }}</span>
+            </label>
+            <div class="app-dialog__actions">
+              <app-button
+                type="button"
+                variant="ghost"
+                [disabled]="saving()"
+                (clicked)="cancelEditCategory()"
               >
-                <input
-                  class="form-input"
-                  formControlName="code"
-                  autocomplete="off"
-                />
-              </app-form-field>
-              <app-form-field
-                [label]="'admin.categories.sort_order' | translate"
-                [required]="true"
+                {{ "admin.categories.cancel" | translate }}
+              </app-button>
+              <app-button
+                type="submit"
+                [loading]="saving()"
+                [disabled]="saving()"
               >
-                <input
-                  class="form-input"
-                  type="number"
-                  formControlName="sortOrder"
-                  min="0"
-                />
-              </app-form-field>
-              <label class="categories-admin__checkbox">
-                <input type="checkbox" formControlName="photosPrivate" />
-                <span>{{ "admin.categories.photos_private" | translate }}</span>
-              </label>
-              <label class="categories-admin__checkbox">
-                <input type="checkbox" formControlName="isActive" />
-                <span>{{ "admin.categories.active" | translate }}</span>
-              </label>
-              <div class="categories-admin__form-actions">
-                <app-button type="submit" [loading]="saving()">
-                  {{ "admin.categories.save" | translate }}
-                </app-button>
-                <app-button variant="ghost" (clicked)="cancelEditCategory()">
+                {{ "admin.categories.save" | translate }}
+              </app-button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }
+  }
+
+  @if (addingFieldCategoryId(); as categoryId) {
+    @if (findCategory(categoryId); as category) {
+      <div
+        class="app-dialog__overlay"
+        (click)="closeOpenDialogs()"
+        (keydown.escape)="closeOpenDialogs()"
+      >
+        <div
+          class="app-dialog app-dialog--scrollable"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="categories-add-field-dialog-title"
+          (click)="$event.stopPropagation()"
+        >
+          <header class="app-dialog__header">
+            <div class="app-dialog__icon" aria-hidden="true">
+              <app-icon name="tag" size="md" />
+            </div>
+            <div class="app-dialog__heading">
+              <h2
+                id="categories-add-field-dialog-title"
+                class="app-dialog__title"
+              >
+                {{ "admin.categories.add_field_title" | translate }}
+              </h2>
+              <p class="app-dialog__intro">
+                {{ categoryLabel(category.code) }}
+              </p>
+            </div>
+          </header>
+          @if (error()) {
+            <app-alert variant="error">{{ error() }}</app-alert>
+          }
+          <form
+            class="categories-admin__dialog-form"
+            [formGroup]="addFieldForm"
+            (ngSubmit)="submitAddField(category.id)"
+          >
+            <app-category-field-form [form]="addFieldForm" />
+            <div class="app-dialog__actions">
+              <app-button
+                type="button"
+                variant="ghost"
+                [disabled]="saving()"
+                (clicked)="cancelFieldForms()"
+              >
+                {{ "admin.categories.cancel" | translate }}
+              </app-button>
+              <app-button
+                type="submit"
+                [loading]="saving()"
+                [disabled]="saving()"
+              >
+                {{ "admin.categories.save" | translate }}
+              </app-button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }
+  }
+
+  @if (editingField(); as fieldRef) {
+    @if (findCategory(fieldRef.categoryId); as category) {
+      @if (findField(fieldRef.categoryId, fieldRef.fieldId); as field) {
+        <div
+          class="app-dialog__overlay"
+          (click)="closeOpenDialogs()"
+          (keydown.escape)="closeOpenDialogs()"
+        >
+          <div
+            class="app-dialog app-dialog--scrollable"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="categories-edit-field-dialog-title"
+            (click)="$event.stopPropagation()"
+          >
+            <header class="app-dialog__header">
+              <div class="app-dialog__icon" aria-hidden="true">
+                <app-icon name="tag" size="md" />
+              </div>
+              <div class="app-dialog__heading">
+                <h2
+                  id="categories-edit-field-dialog-title"
+                  class="app-dialog__title"
+                >
+                  {{ "admin.categories.edit_field_title" | translate }}
+                </h2>
+                <p class="app-dialog__intro">
+                  {{ fieldLabel(category.code, field.fieldKey) }}
+                </p>
+              </div>
+            </header>
+            @if (error()) {
+              <app-alert variant="error">{{ error() }}</app-alert>
+            }
+            <form
+              class="categories-admin__dialog-form"
+              [formGroup]="editFieldForm"
+              (ngSubmit)="submitEditField(category.id, field.id)"
+            >
+              <app-category-field-form [form]="editFieldForm" />
+              <div class="app-dialog__actions">
+                <app-button
+                  type="button"
+                  variant="ghost"
+                  [disabled]="saving()"
+                  (clicked)="cancelFieldForms()"
+                >
                   {{ "admin.categories.cancel" | translate }}
+                </app-button>
+                <app-button
+                  type="submit"
+                  [loading]="saving()"
+                  [disabled]="saving()"
+                >
+                  {{ "admin.categories.save" | translate }}
                 </app-button>
               </div>
             </form>
-          } @else {
-            <div class="categories-admin__item-actions">
-              <app-button
-                variant="outline"
-                size="sm"
-                (clicked)="startEditCategory(category)"
-              >
-                {{ "admin.categories.edit" | translate }}
-              </app-button>
-              <app-button
-                variant="outline"
-                size="sm"
-                (clicked)="startAddField(category)"
-              >
-                {{ "admin.categories.add_field" | translate }}
-              </app-button>
-            </div>
-          }
-
-          <section
-            class="categories-admin__fields"
-            [attr.aria-label]="'admin.categories.fields' | translate"
-          >
-            <h3 class="categories-admin__fields-title">
-              {{ "admin.categories.fields" | translate }}
-            </h3>
-
-            @if (category.fieldDefinitions.length === 0) {
-              <p class="categories-admin__empty-fields">
-                {{ "admin.categories.no_fields" | translate }}
-              </p>
-            }
-
-            @for (field of category.fieldDefinitions; track field.id) {
-              <div class="categories-admin__field-row">
-                @if (
-                  editingField()?.categoryId === category.id &&
-                  editingField()?.fieldId === field.id
-                ) {
-                  <form
-                    class="categories-admin__form categories-admin__field-form"
-                    [formGroup]="editFieldForm"
-                    (ngSubmit)="submitEditField(category.id, field.id)"
-                  >
-                    <app-category-field-form [form]="editFieldForm" />
-                    <div class="categories-admin__form-actions">
-                      <app-button type="submit" [loading]="saving()">
-                        {{ "admin.categories.save" | translate }}
-                      </app-button>
-                      <app-button
-                        variant="ghost"
-                        (clicked)="cancelFieldForms()"
-                      >
-                        {{ "admin.categories.cancel" | translate }}
-                      </app-button>
-                    </div>
-                  </form>
-                } @else {
-                  <div class="categories-admin__field-summary">
-                    <div>
-                      <strong>{{
-                        fieldLabel(category.code, field.fieldKey)
-                      }}</strong>
-                      <span class="categories-admin__field-meta">
-                        <code>{{ field.fieldKey }}</code>
-                        · {{ fieldTypeLabel(field.type) }} ·
-                        {{ "admin.categories.sort_order" | translate }}:
-                        {{ field.sortOrder }}
-                        @if (field.required) {
-                          · {{ "admin.categories.required" | translate }}
-                        }
-                        @if (
-                          field.minLength !== null &&
-                          field.minLength !== undefined
-                        ) {
-                          · min {{ field.minLength }}
-                        }
-                        @if (
-                          field.maxLength !== null &&
-                          field.maxLength !== undefined
-                        ) {
-                          · max {{ field.maxLength }}
-                        }
-                        @if (field.textFormat) {
-                          · {{ textFormatLabel(field.textFormat) }}
-                        }
-                      </span>
-                    </div>
-                    <app-button
-                      variant="ghost"
-                      size="sm"
-                      (clicked)="startEditField(category, field)"
-                    >
-                      {{ "admin.categories.edit" | translate }}
-                    </app-button>
-                  </div>
-                }
-              </div>
-            }
-
-            @if (addingFieldCategoryId() === category.id) {
-              <form
-                class="categories-admin__form categories-admin__field-form"
-                [formGroup]="addFieldForm"
-                (ngSubmit)="submitAddField(category.id)"
-              >
-                <app-category-field-form [form]="addFieldForm" />
-                <div class="categories-admin__form-actions">
-                  <app-button type="submit" [loading]="saving()">
-                    {{ "admin.categories.save" | translate }}
-                  </app-button>
-                  <app-button variant="ghost" (clicked)="cancelFieldForms()">
-                    {{ "admin.categories.cancel" | translate }}
-                  </app-button>
-                </div>
-              </form>
-            }
-          </section>
-        </app-card>
+          </div>
+        </div>
       }
-    </div>
+    }
   }
 </section>

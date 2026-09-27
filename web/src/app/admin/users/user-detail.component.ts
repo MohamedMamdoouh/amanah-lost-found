@@ -7,11 +7,13 @@ import { firstValueFrom } from 'rxjs';
 
 import { ApiErrorService } from '../../i18n/api-error.service';
 import { AlertComponent } from '../../shared/ui/alert/alert.component';
-import { BadgeComponent } from '../../shared/ui/badge/badge.component';
 import { ButtonComponent } from '../../shared/ui/button/button.component';
-import { CardComponent } from '../../shared/ui/card/card.component';
+import { IconComponent } from '../../shared/ui/icon/icon.component';
+import {
+  ActionFeedbackDialogComponent,
+  ActionFeedbackState,
+} from '../../shared/ui/action-feedback-dialog/action-feedback-dialog.component';
 import { ConfirmDialogComponent } from '../../shared/ui/confirm-dialog/confirm-dialog.component';
-import { FormFieldComponent } from '../../shared/ui/form-field/form-field.component';
 import { LoadingIndicatorComponent } from '../../shared/ui/loading-indicator/loading-indicator.component';
 import { PageHeaderComponent } from '../../shared/ui/page-header/page-header.component';
 import { AdminUserDetail, AdminUsersService } from '../admin-users.service';
@@ -22,11 +24,10 @@ import { AdminUserDetail, AdminUsersService } from '../admin-users.service';
   imports: [
     AppDatePipe,
     AlertComponent,
-    BadgeComponent,
     ButtonComponent,
-    CardComponent,
+    IconComponent,
+    ActionFeedbackDialogComponent,
     ConfirmDialogComponent,
-    FormFieldComponent,
     LoadingIndicatorComponent,
     PageHeaderComponent,
     ReactiveFormsModule,
@@ -45,10 +46,11 @@ export class UserDetailComponent implements OnInit {
   readonly loadError = signal<string | null>(null);
   readonly user = signal<AdminUserDetail | null>(null);
   readonly actionError = signal<string | null>(null);
-  readonly actionSuccess = signal<string | null>(null);
+  readonly actionFeedback = signal<ActionFeedbackState | null>(null);
 
-  readonly showBanConfirm = signal(false);
+  readonly showBanDialog = signal(false);
   readonly showUnbanConfirm = signal(false);
+  readonly banDialogError = signal<string | null>(null);
   readonly banning = signal(false);
   readonly unbanning = signal(false);
 
@@ -61,23 +63,36 @@ export class UserDetailComponent implements OnInit {
     void this.loadUser();
   }
 
-  openBanConfirm(): void {
+  openBanDialog(): void {
     if (this.user()?.isBanned || this.banning()) {
       return;
     }
 
     this.actionError.set(null);
-    this.actionSuccess.set(null);
+    this.banDialogError.set(null);
+    this.showBanDialog.set(true);
+  }
+
+  closeBanDialog(): void {
+    if (this.banning()) {
+      return;
+    }
+
+    this.showBanDialog.set(false);
+    this.banDialogError.set(null);
+  }
+
+  submitBanDialog(): void {
+    if (this.user()?.isBanned || this.banning()) {
+      return;
+    }
+
     this.banReasonControl.markAsTouched();
     if (this.banReasonControl.invalid) {
       return;
     }
 
-    this.showBanConfirm.set(true);
-  }
-
-  closeBanConfirm(): void {
-    this.showBanConfirm.set(false);
+    void this.confirmBan();
   }
 
   openUnbanConfirm(): void {
@@ -86,7 +101,6 @@ export class UserDetailComponent implements OnInit {
     }
 
     this.actionError.set(null);
-    this.actionSuccess.set(null);
     this.showUnbanConfirm.set(true);
   }
 
@@ -102,16 +116,23 @@ export class UserDetailComponent implements OnInit {
 
     this.banning.set(true);
     this.actionError.set(null);
+    this.banDialogError.set(null);
 
     try {
       await firstValueFrom(
         this.usersService.ban(detail.id, this.banReasonControl.value.trim()),
       );
-      this.showBanConfirm.set(false);
-      this.actionSuccess.set(this.translate.instant('admin.users.ban_done'));
+      this.showBanDialog.set(false);
+      this.banReasonControl.reset();
       await this.loadUser();
+      this.actionFeedback.set({
+        title: this.translate.instant('common.dialog.done_title'),
+        message: this.translate.instant('admin.users.ban_done'),
+      });
     } catch (error) {
-      this.actionError.set(this.apiErrors.messageFromHttpError(error));
+      const message = this.apiErrors.messageFromHttpError(error);
+      this.banDialogError.set(message);
+      this.actionError.set(message);
     } finally {
       this.banning.set(false);
     }
@@ -129,13 +150,32 @@ export class UserDetailComponent implements OnInit {
     try {
       await firstValueFrom(this.usersService.unban(detail.id));
       this.showUnbanConfirm.set(false);
-      this.actionSuccess.set(this.translate.instant('admin.users.unban_done'));
       await this.loadUser();
+      this.actionFeedback.set({
+        title: this.translate.instant('common.dialog.done_title'),
+        message: this.translate.instant('admin.users.unban_done'),
+      });
     } catch (error) {
       this.actionError.set(this.apiErrors.messageFromHttpError(error));
     } finally {
       this.unbanning.set(false);
     }
+  }
+
+  roleLabel(role: string): string {
+    const key =
+      role === 'Admin'
+        ? 'admin.users.role_admin'
+        : role === 'User'
+          ? 'admin.users.role_user'
+          : null;
+    return key ? this.translate.instant(key) : role;
+  }
+
+  closeActionFeedback(): void {
+    const feedback = this.actionFeedback();
+    this.actionFeedback.set(null);
+    feedback?.onClosed?.();
   }
 
   private async loadUser(): Promise<void> {

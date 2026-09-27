@@ -1,49 +1,82 @@
-<section class="moderation-queue page-container--wide" aria-labelledby="moderation-queue-title">
-  <app-page-header
-    [title]="'admin.moderation.title' | translate"
-    [intro]="'admin.moderation.intro' | translate"
-  >
-    @if (pendingCount() > 0) {
-      <app-badge variant="pending">
-        {{
-          'admin.moderation.pending_badge'
-            | translate: { count: pendingCount() }
-        }}
-      </app-badge>
-    }
-  </app-page-header>
+<section class="admin-page moderation-queue" aria-labelledby="moderation-queue-title">
+  <div class="admin-page__head">
+    <app-page-header
+      [title]="'admin.moderation.title' | translate"
+      [intro]="'admin.moderation.intro' | translate"
+    >
+      @if (pendingCount() > 0) {
+        <div
+          class="admin-page__stat"
+          role="status"
+          aria-live="polite"
+          [attr.aria-label]="
+            'admin.moderation.pending_badge'
+              | translate: { count: pendingCount() }
+          "
+        >
+          <span class="admin-page__stat-value">{{ pendingCount() }}</span>
+          <span class="admin-page__stat-label">{{
+            'admin.moderation.pending_label' | translate
+          }}</span>
+        </div>
+      }
+    </app-page-header>
+  </div>
 
-  <app-form-field
-    [label]="'admin.moderation.search_label' | translate"
-    htmlFor="moderation-search"
-  >
-    <app-search-input
-      [formControl]="searchControl"
-      [placeholder]="'admin.moderation.search_placeholder' | translate"
-      [ariaLabel]="'admin.moderation.search_label' | translate"
-    />
-  </app-form-field>
+  <div class="admin-page__toolbar">
+    <app-form-field
+      [label]="'admin.moderation.search_label' | translate"
+      htmlFor="moderation-search"
+    >
+      <app-search-input
+        [formControl]="searchControl"
+        [placeholder]="'admin.moderation.search_placeholder' | translate"
+        [ariaLabel]="'admin.moderation.search_label' | translate"
+      />
+    </app-form-field>
+  </div>
 
-  @if (loading()) {
-    <app-loading-indicator [label]="'admin.moderation.loading' | translate" />
-  } @else if (error()) {
-    <app-alert variant="error">{{ error() }}</app-alert>
-  } @else if (hasSearchQuery()) {
-    @if (searchLoading()) {
-      <app-loading-indicator [label]="'admin.moderation.searching' | translate" />
-    } @else if (searchResults().length === 0) {
-      <app-empty-state [title]="'admin.moderation.search_empty' | translate" />
+  <div class="admin-page__body">
+    @if (loading()) {
+      <app-loading-indicator [label]="'admin.moderation.loading' | translate" />
+    } @else if (error()) {
+      <app-alert variant="error">{{ error() }}</app-alert>
+    } @else if (hasSearchQuery()) {
+      @if (searchLoading()) {
+        <app-loading-indicator
+          [label]="'admin.moderation.searching' | translate"
+        />
+      } @else if (searchResults().length === 0) {
+        <app-empty-state [title]="'admin.moderation.search_empty' | translate" />
+      } @else {
+        <ul class="admin-page__list">
+          @for (item of searchResults(); track item.id) {
+            <li>
+              <app-listing-card
+                [title]="item.title"
+                [reportType]="item.type"
+                [subtitle]="categoryLabel(item.categoryCode)"
+                [date]="(item.createdAt | appDate) ?? ''"
+                [badgeLabel]="statusLabel(item.status)"
+                [badgeVariant]="'pending'"
+                [routerLink]="['/admin/moderation', item.id]"
+                [actionLabel]="'admin.moderation.review' | translate"
+              />
+            </li>
+          }
+        </ul>
+      }
+    } @else if (items().length === 0) {
+      <app-empty-state [title]="'admin.moderation.empty' | translate" />
     } @else {
-      <ul class="moderation-queue__list">
-        @for (item of searchResults(); track item.id) {
+      <ul class="admin-page__list">
+        @for (item of items(); track item.id) {
           <li>
             <app-listing-card
               [title]="item.title"
               [reportType]="item.type"
               [subtitle]="categoryLabel(item.categoryCode)"
               [date]="(item.createdAt | appDate) ?? ''"
-              [badgeLabel]="statusLabel(item.status)"
-              [badgeVariant]="'pending'"
               [routerLink]="['/admin/moderation', item.id]"
               [actionLabel]="'admin.moderation.review' | translate"
             />
@@ -51,22 +84,5 @@
         }
       </ul>
     }
-  } @else if (items().length === 0) {
-    <app-empty-state [title]="'admin.moderation.empty' | translate" />
-  } @else {
-    <ul class="moderation-queue__list">
-      @for (item of items(); track item.id) {
-        <li>
-          <app-listing-card
-            [title]="item.title"
-            [reportType]="item.type"
-            [subtitle]="categoryLabel(item.categoryCode)"
-            [date]="(item.createdAt | appDate) ?? ''"
-            [routerLink]="['/admin/moderation', item.id]"
-            [actionLabel]="'admin.moderation.review' | translate"
-          />
-        </li>
-      }
-    </ul>
-  }
+  </div>
 </section>

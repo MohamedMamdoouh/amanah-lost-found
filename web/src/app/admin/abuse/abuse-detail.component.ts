@@ -10,7 +10,7 @@ import { firstValueFrom } from 'rxjs';
 import { ApiErrorService } from '../../i18n/api-error.service';
 import { CatalogLabelService } from '../../i18n/catalog-label.service';
 import { DomainLabelService } from '../../i18n/domain-label.service';
-import { ChatThreadDetail } from '../../chats/models/chat.models';
+import { ChatMessage, ChatThreadDetail } from '../../chats/models/chat.models';
 import { ClaimStatus } from '../../claims/models/claim.models';
 import { AlertComponent } from '../../shared/ui/alert/alert.component';
 import {
@@ -18,12 +18,16 @@ import {
   BadgeVariant,
 } from '../../shared/ui/badge/badge.component';
 import { ButtonComponent } from '../../shared/ui/button/button.component';
-import { CardComponent } from '../../shared/ui/card/card.component';
+import {
+  ActionFeedbackDialogComponent,
+  ActionFeedbackState,
+} from '../../shared/ui/action-feedback-dialog/action-feedback-dialog.component';
 import { ConfirmDialogComponent } from '../../shared/ui/confirm-dialog/confirm-dialog.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
 import { FormFieldComponent } from '../../shared/ui/form-field/form-field.component';
 import { LoadingIndicatorComponent } from '../../shared/ui/loading-indicator/loading-indicator.component';
-import { PageHeaderComponent } from '../../shared/ui/page-header/page-header.component';
+import { IconComponent } from '../../shared/ui/icon/icon.component';
+import { ReportMastheadComponent } from '../../shared/ui/report-masthead/report-masthead.component';
 import { ReportTypeMarkComponent } from '../../shared/ui/report-type-mark/report-type-mark.component';
 import { TabItem, TabsComponent } from '../../shared/ui/tabs/tabs.component';
 import {
@@ -47,13 +51,14 @@ const BAN_REASON_MIN_LENGTH = 3;
     AlertComponent,
     BadgeComponent,
     ButtonComponent,
-    CardComponent,
+    ActionFeedbackDialogComponent,
     ConfirmDialogComponent,
     EmptyStateComponent,
     FormFieldComponent,
     LoadingIndicatorComponent,
-    PageHeaderComponent,
+    IconComponent,
     ReactiveFormsModule,
+    ReportMastheadComponent,
     ReportTypeMarkComponent,
     RouterLink,
     TabsComponent,
@@ -76,7 +81,7 @@ export class AbuseDetailComponent implements OnInit {
   readonly loadError = signal<string | null>(null);
   readonly detail = signal<AbuseReportDetail | null>(null);
   readonly actionError = signal<string | null>(null);
-  readonly actionSuccess = signal<string | null>(null);
+  readonly actionFeedback = signal<ActionFeedbackState | null>(null);
   readonly noteError = signal<string | null>(null);
   readonly showResolveConfirm = signal(false);
   readonly resolving = signal(false);
@@ -215,6 +220,29 @@ export class AbuseDetailComponent implements OnInit {
     return thread.counterpartyDisplayName;
   }
 
+  isListingOwnerMessage(message: ChatMessage): boolean {
+    const ownerId = this.detail()?.listing.listingOwnerUserId;
+    return ownerId != null && message.senderId === ownerId;
+  }
+
+  listingOwnerName(): string {
+    return this.detail()?.listing.listingOwnerDisplayName ?? '';
+  }
+
+  showsMessageMeta(messages: ChatMessage[], index: number): boolean {
+    if (index === 0) {
+      return true;
+    }
+
+    const previous = messages[index - 1];
+    const current = messages[index];
+    return (
+      previous.senderId !== current.senderId ||
+      this.isListingOwnerMessage(previous) !==
+        this.isListingOwnerMessage(current)
+    );
+  }
+
   selectInvestigationTab(id: string): void {
     if (id !== 'chat' && id !== 'claims' && id !== 'photos') {
       return;
@@ -322,6 +350,12 @@ export class AbuseDetailComponent implements OnInit {
     }
   }
 
+  closeActionFeedback(): void {
+    const feedback = this.actionFeedback();
+    this.actionFeedback.set(null);
+    feedback?.onClosed?.();
+  }
+
   async confirmResolve(): Promise<void> {
     const current = this.detail();
     if (!current || current.status !== 'open' || this.resolving()) {
@@ -345,9 +379,10 @@ export class AbuseDetailComponent implements OnInit {
         }),
       );
       this.showResolveConfirm.set(false);
-      this.actionSuccess.set(
-        this.translate.instant(this.doneMessageKey(outcome)),
-      );
+      this.actionFeedback.set({
+        title: this.translate.instant('common.dialog.done_title'),
+        message: this.translate.instant(this.doneMessageKey(outcome)),
+      });
       this.resolveForm.controls.adminNote.setValue('');
       this.clearInvestigation();
       await this.refreshDetail(current.id);

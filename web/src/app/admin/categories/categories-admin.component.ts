@@ -8,7 +8,8 @@ import { CatalogLabelService } from '../../i18n/catalog-label.service';
 import { AlertComponent } from '../../shared/ui/alert/alert.component';
 import { BadgeComponent } from '../../shared/ui/badge/badge.component';
 import { ButtonComponent } from '../../shared/ui/button/button.component';
-import { CardComponent } from '../../shared/ui/card/card.component';
+import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
+import { IconComponent } from '../../shared/ui/icon/icon.component';
 import { FormFieldComponent } from '../../shared/ui/form-field/form-field.component';
 import { LoadingIndicatorComponent } from '../../shared/ui/loading-indicator/loading-indicator.component';
 import { PageHeaderComponent } from '../../shared/ui/page-header/page-header.component';
@@ -43,7 +44,8 @@ type ParseOptionalIntResult =
     AlertComponent,
     BadgeComponent,
     ButtonComponent,
-    CardComponent,
+    EmptyStateComponent,
+    IconComponent,
     CategoryFieldFormComponent,
     FormFieldComponent,
     LoadingIndicatorComponent,
@@ -100,10 +102,6 @@ export class CategoriesAdminComponent implements OnInit {
     return this.catalogLabels.field(categoryCode, fieldKey);
   }
 
-  fieldTypeLabel(type: string): string {
-    return this.translate.instant(`admin.categories.field_type.${type}`);
-  }
-
   textFormatLabel(format: string | null | undefined): string {
     if (!format) {
       return this.translate.instant('admin.categories.text_format.none');
@@ -111,23 +109,54 @@ export class CategoriesAdminComponent implements OnInit {
     return this.translate.instant(`admin.categories.text_format.${format}`);
   }
 
-  toggleAddCategory(): void {
-    const willShow = !this.showAddCategory();
-    this.showAddCategory.set(willShow);
-    this.editingCategoryId.set(null);
-
-    if (willShow) {
-      this.addCategoryForm.reset({
-        code: '',
-        sortOrder: this.categories().length + 1,
-        photosPrivate: false,
-        isActive: true,
-      });
+  findCategory(id: string | null): AdminCategory | null {
+    if (!id) {
+      return null;
     }
+    return this.categories().find((category) => category.id === id) ?? null;
+  }
+
+  findField(
+    categoryId: string,
+    fieldId: string,
+  ): AdminCategoryFieldDefinition | null {
+    const category = this.findCategory(categoryId);
+    return (
+      category?.fieldDefinitions.find((field) => field.id === fieldId) ?? null
+    );
+  }
+
+  openAddCategory(): void {
+    this.editingCategoryId.set(null);
+    this.cancelFieldForms();
+    this.showAddCategory.set(true);
+    this.addCategoryForm.reset({
+      code: '',
+      sortOrder: this.categories().length + 1,
+      photosPrivate: false,
+      isActive: true,
+    });
+  }
+
+  closeAddCategory(): void {
+    if (this.saving()) {
+      return;
+    }
+    this.showAddCategory.set(false);
+  }
+
+  closeOpenDialogs(): void {
+    if (this.saving()) {
+      return;
+    }
+    this.closeAddCategory();
+    this.cancelEditCategory();
+    this.cancelFieldForms();
   }
 
   startEditCategory(category: AdminCategory): void {
     this.showAddCategory.set(false);
+    this.cancelFieldForms();
     this.editingCategoryId.set(category.id);
     this.editCategoryForm.reset({
       code: category.code,
@@ -142,12 +171,16 @@ export class CategoriesAdminComponent implements OnInit {
   }
 
   startAddField(category: AdminCategory): void {
+    this.showAddCategory.set(false);
+    this.editingCategoryId.set(null);
     this.editingField.set(null);
     this.addingFieldCategoryId.set(category.id);
     this.addFieldForm.reset(this.emptyFieldFormValue(this.nextFieldSortOrder(category)));
   }
 
   startEditField(category: AdminCategory, field: AdminCategoryFieldDefinition): void {
+    this.showAddCategory.set(false);
+    this.editingCategoryId.set(null);
     this.addingFieldCategoryId.set(null);
     this.editingField.set({ categoryId: category.id, fieldId: field.id });
     this.editFieldForm.reset(this.toFieldFormValue(field));

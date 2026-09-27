@@ -5,7 +5,6 @@ import { firstValueFrom } from 'rxjs';
 
 import { DomainLabelService } from '../../i18n/domain-label.service';
 import { AlertComponent } from '../../shared/ui/alert/alert.component';
-import { BadgeComponent } from '../../shared/ui/badge/badge.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
 import { ListingCardComponent } from '../../shared/ui/listing-card/listing-card.component';
 import { LoadingIndicatorComponent } from '../../shared/ui/loading-indicator/loading-indicator.component';
@@ -18,7 +17,6 @@ import { AbuseQueueItem, AdminAbuseService } from '../admin-abuse.service';
   imports: [
     AppDatePipe,
     AlertComponent,
-    BadgeComponent,
     EmptyStateComponent,
     ListingCardComponent,
     LoadingIndicatorComponent,
@@ -42,12 +40,14 @@ export class AbuseQueueComponent implements OnInit {
     void this.loadQueue();
   }
 
-  queueSubtitle(item: AbuseQueueItem): string {
-    const reason = this.translate.instant(item.reason);
-    const flagger = this.translate.instant('admin.abuse.queue.flagger', {
+  queueReason(item: AbuseQueueItem): string {
+    return this.translate.instant(item.reason);
+  }
+
+  queueFlagger(item: AbuseQueueItem): string {
+    return this.translate.instant('admin.abuse.queue.flagger', {
       name: item.abuseReporterDisplayName,
     });
-    return `${reason} · ${flagger}`;
   }
 
   private async loadQueue(): Promise<void> {

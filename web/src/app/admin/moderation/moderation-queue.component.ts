@@ -8,7 +8,6 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 import { CatalogLabelService } from '../../i18n/catalog-label.service';
 import { AlertComponent } from '../../shared/ui/alert/alert.component';
-import { BadgeComponent } from '../../shared/ui/badge/badge.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
 import { FormFieldComponent } from '../../shared/ui/form-field/form-field.component';
 import { ListingCardComponent } from '../../shared/ui/listing-card/listing-card.component';
@@ -26,7 +25,6 @@ import {
   imports: [
     AppDatePipe,
     AlertComponent,
-    BadgeComponent,
     EmptyStateComponent,
     FormFieldComponent,
     ListingCardComponent,

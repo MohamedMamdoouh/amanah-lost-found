@@ -1,481 +1,626 @@
-<section class="abuse-detail">
+<section class="admin-page abuse-detail" aria-labelledby="abuse-detail-title">
   @if (loading()) {
-    <app-loading-indicator [label]="'admin.abuse.detail.loading' | translate" />
+    <div class="admin-page__body">
+      <app-loading-indicator
+        [label]="'admin.abuse.detail.loading' | translate"
+      />
+    </div>
   } @else if (loadError()) {
-    <app-alert variant="error">{{ loadError() }}</app-alert>
+    <div class="admin-page__body">
+      <app-alert variant="error">{{ loadError() }}</app-alert>
+    </div>
   } @else if (detail()) {
     @let item = detail()!;
-    <app-page-header
-      [backLink]="'/admin/abuse'"
-      [backLabel]="'admin.abuse.detail.back' | translate"
-      [eyebrow]="'admin.abuse.detail.flag_title' | translate"
-      [title]="item.listing.title"
-    >
-      <app-badge [variant]="item.status === 'open' ? 'pending' : 'resolved'">
-        {{ "admin.abuse.status." + item.status | translate }}
-      </app-badge>
-    </app-page-header>
+    <div class="admin-page__head abuse-detail__head">
+      <app-report-masthead
+        backLink="/admin/abuse"
+        [backLabel]="'admin.abuse.detail.back' | translate"
+        [title]="item.listing.title"
+        titleId="abuse-detail-title"
+        [reportType]="item.listing.type"
+        [badgeLabel]="'admin.abuse.status.' + item.status | translate"
+        [badgeVariant]="item.status === 'open' ? 'pending' : 'resolved'"
+      />
+    </div>
 
-    @if (actionSuccess()) {
-      <app-alert variant="success">{{ actionSuccess() }}</app-alert>
-    }
-    @if (actionError()) {
-      <app-alert variant="error">{{ actionError() }}</app-alert>
-    }
+    <div class="admin-page__body">
+      @if (actionError()) {
+        <app-alert variant="error">{{ actionError() }}</app-alert>
+      }
 
-    <app-card variant="flat" padding="md">
-      <h2 class="abuse-detail__heading">
-        {{ "admin.abuse.detail.flag_title" | translate }}
-      </h2>
-      <dl class="abuse-detail__fields">
-        <div>
-          <dt>{{ "admin.abuse.detail.flagger" | translate }}</dt>
-          <dd>
-            <a
-              class="abuse-detail__link"
-              [routerLink]="['/admin/users', item.abuseReporterUserId]"
-            >
-              {{ item.abuseReporterDisplayName }}
-            </a>
-          </dd>
-        </div>
-        <div>
-          <dt>{{ "admin.abuse.detail.reason" | translate }}</dt>
-          <dd>{{ item.reason | translate }}</dd>
+      <section
+        class="abuse-detail__panel"
+        aria-labelledby="abuse-flag-summary-title"
+      >
+        <h2 id="abuse-flag-summary-title" class="abuse-detail__panel-title">
+          {{ "admin.abuse.detail.flag_title" | translate }}
+        </h2>
+        <div class="abuse-detail__facts">
+          <article class="abuse-detail__fact">
+            <span class="abuse-detail__fact-icon" aria-hidden="true">
+              <app-icon name="shield" size="sm" />
+            </span>
+            <div class="abuse-detail__fact-copy">
+              <p class="abuse-detail__fact-label">
+                {{ "admin.abuse.detail.reason" | translate }}
+              </p>
+              <p class="abuse-detail__fact-value">
+                {{ item.reason | translate }}
+              </p>
+            </div>
+          </article>
+          <article class="abuse-detail__fact">
+            <span class="abuse-detail__fact-icon" aria-hidden="true">
+              <app-icon name="person" size="sm" />
+            </span>
+            <div class="abuse-detail__fact-copy">
+              <p class="abuse-detail__fact-label">
+                {{ "admin.abuse.detail.flagger" | translate }}
+              </p>
+              <p class="abuse-detail__fact-value">
+                <a
+                  class="abuse-detail__link"
+                  [routerLink]="['/admin/users', item.abuseReporterUserId]"
+                >
+                  {{ item.abuseReporterDisplayName }}
+                </a>
+              </p>
+            </div>
+          </article>
+          <article class="abuse-detail__fact">
+            <span class="abuse-detail__fact-icon" aria-hidden="true">
+              <app-icon name="calendar" size="sm" />
+            </span>
+            <div class="abuse-detail__fact-copy">
+              <p class="abuse-detail__fact-label">
+                {{ "admin.abuse.detail.created_at" | translate }}
+              </p>
+              <p class="abuse-detail__fact-value">
+                {{ item.createdAt | appDate }}
+              </p>
+            </div>
+          </article>
+          @if (item.resolutionOutcome) {
+            <article class="abuse-detail__fact">
+              <span class="abuse-detail__fact-icon" aria-hidden="true">
+                <app-icon name="check" size="sm" />
+              </span>
+              <div class="abuse-detail__fact-copy">
+                <p class="abuse-detail__fact-label">
+                  {{ "admin.abuse.detail.outcome" | translate }}
+                </p>
+                <p class="abuse-detail__fact-value">
+                  {{ outcomeLabel(item.resolutionOutcome) }}
+                </p>
+              </div>
+            </article>
+          }
+          @if (item.resolvedAt) {
+            <article class="abuse-detail__fact">
+              <span class="abuse-detail__fact-icon" aria-hidden="true">
+                <app-icon name="clock" size="sm" />
+              </span>
+              <div class="abuse-detail__fact-copy">
+                <p class="abuse-detail__fact-label">
+                  {{ "admin.abuse.detail.resolved_at" | translate }}
+                </p>
+                <p class="abuse-detail__fact-value">
+                  {{ item.resolvedAt | appDate }}
+                </p>
+              </div>
+            </article>
+          }
         </div>
         @if (item.note) {
-          <div>
-            <dt>{{ "admin.abuse.detail.note" | translate }}</dt>
-            <dd class="abuse-detail__pre">{{ item.note }}</dd>
-          </div>
-        }
-        <div>
-          <dt>{{ "admin.abuse.detail.status" | translate }}</dt>
-          <dd>{{ "admin.abuse.status." + item.status | translate }}</dd>
-        </div>
-        <div>
-          <dt>{{ "admin.abuse.detail.created_at" | translate }}</dt>
-          <dd>{{ item.createdAt | appDate }}</dd>
-        </div>
-        @if (item.resolutionOutcome) {
-          <div>
-            <dt>{{ "admin.abuse.detail.outcome" | translate }}</dt>
-            <dd>{{ outcomeLabel(item.resolutionOutcome) }}</dd>
-          </div>
-        }
-        @if (item.resolvedAt) {
-          <div>
-            <dt>{{ "admin.abuse.detail.resolved_at" | translate }}</dt>
-            <dd>{{ item.resolvedAt | appDate }}</dd>
-          </div>
-        }
-      </dl>
-    </app-card>
-
-    <app-card variant="flat" padding="md">
-      <h2 class="abuse-detail__heading">
-        {{ "admin.abuse.detail.listing_title" | translate }}
-      </h2>
-      <dl class="abuse-detail__fields">
-        <div>
-          <dt>{{ "admin.abuse.detail.listing_owner" | translate }}</dt>
-          <dd>
-            <a
-              class="abuse-detail__link"
-              [routerLink]="['/admin/users', item.listing.listingOwnerUserId]"
-            >
-              {{ item.listing.listingOwnerDisplayName }}
-            </a>
-          </dd>
-        </div>
-        <div>
-          <dt>{{ "reports.detail.category" | translate }}</dt>
-          <dd>{{ categoryLabel(item.listing.categoryCode) }}</dd>
-        </div>
-        <div>
-          <dt>{{ "reports.detail.governorate" | translate }}</dt>
-          <dd>{{ governorateLabel(item.listing.governorateCode) }}</dd>
-        </div>
-        <div>
-          <dt>{{ "admin.abuse.detail.listing_type" | translate }}</dt>
-          <dd><app-report-type-mark [type]="item.listing.type" /></dd>
-        </div>
-        <div>
-          <dt>{{ "admin.abuse.detail.listing_status" | translate }}</dt>
-          <dd>{{ domainLabels.reportStatus(item.listing.status) }}</dd>
-        </div>
-        @if (item.listing.publishedAt) {
-          <div>
-            <dt>{{ "admin.abuse.detail.published_at" | translate }}</dt>
-            <dd>{{ item.listing.publishedAt | appDate }}</dd>
-          </div>
-        }
-      </dl>
-      @if (canViewPublicListing(item.listing.status)) {
-        <a class="abuse-detail__link" [routerLink]="listingPath(item.listing)">
-          {{ "admin.abuse.detail.view_listing" | translate }}
-        </a>
-      }
-    </app-card>
-
-    @if (item.status === "open") {
-      <section
-        class="abuse-detail__investigation"
-        aria-labelledby="abuse-investigation-title"
-      >
-        <div class="abuse-detail__investigation-header">
-          <div>
-            <h2 id="abuse-investigation-title" class="abuse-detail__heading">
-              {{ "admin.abuse.investigation.title" | translate }}
-            </h2>
-            <p class="abuse-detail__intro">
-              {{ "admin.abuse.investigation.intro" | translate }}
+          <div class="abuse-detail__note">
+            <p class="abuse-detail__fact-label">
+              {{ "admin.abuse.detail.note" | translate }}
             </p>
+            <p class="abuse-detail__pre">{{ item.note }}</p>
           </div>
-          <app-button
-            variant="ghost"
-            size="sm"
-            [disabled]="investigationLoading()"
-            (clicked)="reloadInvestigation()"
-          >
-            {{ "admin.abuse.investigation.refresh" | translate }}
-          </app-button>
+        }
+      </section>
+
+      <section
+        class="abuse-detail__panel"
+        aria-labelledby="abuse-listing-title"
+      >
+        <div class="abuse-detail__panel-head">
+          <h2 id="abuse-listing-title" class="abuse-detail__panel-title">
+            {{ "admin.abuse.detail.listing_title" | translate }}
+          </h2>
+          @if (canViewPublicListing(item.listing.status)) {
+            <a
+              class="abuse-detail__panel-action"
+              [routerLink]="listingPath(item.listing)"
+            >
+              {{ "admin.abuse.detail.view_listing" | translate }}
+              <app-icon name="chevron" size="sm" />
+            </a>
+          }
         </div>
-
-        <app-tabs
-          [tabs]="investigationTabs"
-          [activeId]="investigationTab()"
-          [ariaLabel]="'admin.abuse.investigation.title' | translate"
-          (tabChange)="selectInvestigationTab($event)"
-        />
-
-        @if (investigationLoading()) {
-          <app-loading-indicator
-            [label]="'admin.abuse.investigation.loading' | translate"
-          />
-        } @else if (investigationError()) {
-          <app-alert variant="error">{{ investigationError() }}</app-alert>
-        } @else if (investigationTab() === "chat") {
-          <div role="tabpanel" aria-labelledby="abuse-investigation-title">
-            @if (chatThreads(); as threads) {
-              @if (threads.length === 0) {
-                <app-empty-state
-                  [title]="'admin.abuse.investigation.chat_empty' | translate"
-                />
-              } @else {
-                <p class="abuse-detail__hint">
-                  {{ "admin.abuse.investigation.chat_latest" | translate }}
-                </p>
-                <ul class="abuse-detail__stack">
-                  @for (thread of threads; track thread.id) {
-                    <li>
-                      <app-card variant="inset" padding="md">
-                        <header class="abuse-detail__thread-header">
-                          <h3 class="abuse-detail__subheading">
-                            {{
-                              "admin.abuse.investigation.claimant" | translate
-                            }}:
-                            {{ claimantName(thread) }}
-                          </h3>
-                          <app-badge [variant]="claimBadge(thread.claimStatus)">
-                            {{ claimStatusLabel(thread.claimStatus) }}
-                          </app-badge>
-                          @if (thread.readOnlyAt) {
-                            <app-badge variant="neutral">
-                              {{
-                                "admin.abuse.investigation.read_only"
-                                  | translate
-                              }}
-                            </app-badge>
-                          }
-                        </header>
-                        @if (thread.messages.length === 0) {
-                          <p class="abuse-detail__hint">
-                            {{
-                              "admin.abuse.investigation.messages_empty"
-                                | translate
-                            }}
-                          </p>
-                        } @else {
-                          <ol class="abuse-detail__messages">
-                            @for (
-                              message of thread.messages;
-                              track message.id
-                            ) {
-                              <li class="abuse-detail__message">
-                                <header class="abuse-detail__message-header">
-                                  <span class="abuse-detail__sender">{{
-                                    message.senderDisplayName
-                                  }}</span>
-                                  <time [attr.datetime]="message.sentAt">
-                                    {{ message.sentAt | appDate }}
-                                  </time>
-                                </header>
-                                @if (message.attachmentId) {
-                                  <p class="abuse-detail__attachment">
-                                    {{
-                                      "admin.abuse.investigation.attachment"
-                                        | translate
-                                    }}
-                                  </p>
-                                }
-                                @if (message.body) {
-                                  <p class="abuse-detail__pre">
-                                    {{ message.body }}
-                                  </p>
-                                }
-                              </li>
-                            }
-                          </ol>
-                        }
-                      </app-card>
-                    </li>
-                  }
-                </ul>
-              }
-            } @else {
-              <app-loading-indicator
-                [label]="'admin.abuse.investigation.loading' | translate"
-              />
-            }
+        <dl class="abuse-detail__grid">
+          <div class="abuse-detail__grid-item">
+            <dt>{{ "admin.abuse.detail.listing_owner" | translate }}</dt>
+            <dd>
+              <a
+                class="abuse-detail__link"
+                [routerLink]="['/admin/users', item.listing.listingOwnerUserId]"
+              >
+                {{ item.listing.listingOwnerDisplayName }}
+              </a>
+            </dd>
           </div>
-        } @else if (investigationTab() === "claims") {
-          <div role="tabpanel" aria-labelledby="abuse-investigation-title">
-            @if (claims(); as claimItems) {
-              @if (claimItems.length === 0) {
-                <app-empty-state
-                  [title]="'admin.abuse.investigation.claims_empty' | translate"
-                />
+          <div class="abuse-detail__grid-item">
+            <dt>{{ "reports.detail.category" | translate }}</dt>
+            <dd>{{ categoryLabel(item.listing.categoryCode) }}</dd>
+          </div>
+          <div class="abuse-detail__grid-item">
+            <dt>{{ "reports.detail.governorate" | translate }}</dt>
+            <dd>{{ governorateLabel(item.listing.governorateCode) }}</dd>
+          </div>
+          <div class="abuse-detail__grid-item">
+            <dt>{{ "admin.abuse.detail.listing_type" | translate }}</dt>
+            <dd><app-report-type-mark [type]="item.listing.type" /></dd>
+          </div>
+          <div class="abuse-detail__grid-item">
+            <dt>{{ "admin.abuse.detail.listing_status" | translate }}</dt>
+            <dd>{{ domainLabels.reportStatus(item.listing.status) }}</dd>
+          </div>
+          @if (item.listing.publishedAt) {
+            <div class="abuse-detail__grid-item">
+              <dt>{{ "admin.abuse.detail.published_at" | translate }}</dt>
+              <dd>{{ item.listing.publishedAt | appDate }}</dd>
+            </div>
+          }
+        </dl>
+      </section>
+
+      @if (item.status === "open") {
+        <section
+          class="abuse-detail__panel abuse-detail__investigation"
+          aria-labelledby="abuse-investigation-title"
+        >
+          <div class="abuse-detail__investigation-header">
+            <div>
+              <h2
+                id="abuse-investigation-title"
+                class="abuse-detail__panel-title"
+              >
+                {{ "admin.abuse.investigation.title" | translate }}
+              </h2>
+              <p class="abuse-detail__intro">
+                {{ "admin.abuse.investigation.intro" | translate }}
+              </p>
+            </div>
+            <app-button
+              variant="ghost"
+              size="sm"
+              [disabled]="investigationLoading()"
+              (clicked)="reloadInvestigation()"
+            >
+              {{ "admin.abuse.investigation.refresh" | translate }}
+            </app-button>
+          </div>
+
+          <app-tabs
+            [tabs]="investigationTabs"
+            [activeId]="investigationTab()"
+            [ariaLabel]="'admin.abuse.investigation.title' | translate"
+            (tabChange)="selectInvestigationTab($event)"
+          />
+
+          @if (investigationLoading()) {
+            <app-loading-indicator
+              [label]="'admin.abuse.investigation.loading' | translate"
+            />
+          } @else if (investigationError()) {
+            <app-alert variant="error">{{ investigationError() }}</app-alert>
+          } @else if (investigationTab() === "chat") {
+            <div role="tabpanel" aria-labelledby="abuse-investigation-title">
+              @if (chatThreads(); as threads) {
+                @if (threads.length === 0) {
+                  <app-empty-state
+                    [inset]="true"
+                    icon="chat"
+                    [title]="'admin.abuse.investigation.chat_empty' | translate"
+                    [description]="
+                      'admin.abuse.investigation.chat_empty_desc' | translate
+                    "
+                  />
+                } @else {
+                  <ul class="abuse-detail__stack">
+                    @for (thread of threads; track thread.id) {
+                      <li>
+                        <article
+                          class="abuse-detail__thread"
+                          [attr.aria-label]="
+                            ('admin.abuse.investigation.claimant' | translate) +
+                            ': ' +
+                            claimantName(thread)
+                          "
+                        >
+                          <header class="abuse-detail__thread-bar">
+                            <div class="abuse-detail__thread-parties">
+                              <div
+                                class="abuse-detail__party abuse-detail__party--claimant"
+                              >
+                                <span class="abuse-detail__party-label">{{
+                                  "admin.abuse.investigation.sender_claimant"
+                                    | translate
+                                }}</span>
+                                <span class="abuse-detail__party-name">{{
+                                  claimantName(thread)
+                                }}</span>
+                              </div>
+                              <div
+                                class="abuse-detail__party abuse-detail__party--owner"
+                              >
+                                <span class="abuse-detail__party-label">{{
+                                  "admin.abuse.investigation.sender_listing_owner"
+                                    | translate
+                                }}</span>
+                                <span class="abuse-detail__party-name">{{
+                                  listingOwnerName()
+                                }}</span>
+                              </div>
+                            </div>
+                            <div class="abuse-detail__thread-badges">
+                              <app-badge
+                                [variant]="claimBadge(thread.claimStatus)"
+                              >
+                                {{ claimStatusLabel(thread.claimStatus) }}
+                              </app-badge>
+                              @if (thread.readOnlyAt) {
+                                <app-badge variant="neutral">
+                                  {{
+                                    "admin.abuse.investigation.read_only"
+                                      | translate
+                                  }}
+                                </app-badge>
+                              }
+                            </div>
+                          </header>
+
+                          @if (thread.messages.length === 0) {
+                            <p class="abuse-detail__thread-empty">
+                              {{
+                                "admin.abuse.investigation.messages_empty"
+                                  | translate
+                              }}
+                            </p>
+                          } @else {
+                            <ol
+                              class="abuse-detail__transcript"
+                              [attr.aria-label]="
+                                'admin.abuse.investigation.chat_latest'
+                                  | translate
+                              "
+                            >
+                              @for (
+                                message of thread.messages;
+                                track message.id;
+                                let i = $index
+                              ) {
+                                <li
+                                  class="abuse-detail__message"
+                                  [class.abuse-detail__message--listing-owner]="
+                                    isListingOwnerMessage(message)
+                                  "
+                                  [class.abuse-detail__message--claimant]="
+                                    !isListingOwnerMessage(message)
+                                  "
+                                >
+                                  @if (showsMessageMeta(thread.messages, i)) {
+                                    <span
+                                      class="abuse-detail__message-sender"
+                                      >{{ message.senderDisplayName }}</span
+                                    >
+                                  }
+                                  <div class="abuse-detail__message-bubble">
+                                    @if (message.attachmentId) {
+                                      <p class="abuse-detail__attachment">
+                                        {{
+                                          "admin.abuse.investigation.attachment"
+                                            | translate
+                                        }}
+                                      </p>
+                                    }
+                                    @if (message.body) {
+                                      <p class="abuse-detail__message-body">
+                                        {{ message.body }}
+                                      </p>
+                                    }
+                                    <time
+                                      class="abuse-detail__message-time"
+                                      [attr.datetime]="message.sentAt"
+                                    >
+                                      {{ message.sentAt | appDate }}
+                                    </time>
+                                  </div>
+                                </li>
+                              }
+                            </ol>
+                          }
+                        </article>
+                      </li>
+                    }
+                  </ul>
+                }
               } @else {
-                <ul class="abuse-detail__stack">
-                  @for (claim of claimItems; track claim.id) {
-                    <li>
-                      <app-card variant="inset" padding="md">
-                        <header class="abuse-detail__thread-header">
-                          <h3 class="abuse-detail__subheading">
-                            {{ claim.claimantDisplayName }}
-                          </h3>
-                          <app-badge [variant]="claimBadge(claim.status)">
-                            {{ claimStatusLabel(claim.status) }}
-                          </app-badge>
-                        </header>
-                        <dl class="abuse-detail__fields">
-                          <div>
-                            <dt>
-                              {{
-                                "admin.abuse.investigation.claim_attempt"
-                                  | translate
-                              }}
-                            </dt>
-                            <dd>{{ claim.attemptNumber }}</dd>
+                <app-loading-indicator
+                  [label]="'admin.abuse.investigation.loading' | translate"
+                />
+              }
+            </div>
+          } @else if (investigationTab() === "claims") {
+            <div role="tabpanel" aria-labelledby="abuse-investigation-title">
+              @if (claims(); as claimItems) {
+                @if (claimItems.length === 0) {
+                  <app-empty-state
+                    [inset]="true"
+                    icon="shield"
+                    [title]="
+                      'admin.abuse.investigation.claims_empty' | translate
+                    "
+                    [description]="
+                      'admin.abuse.investigation.claims_empty_desc' | translate
+                    "
+                  />
+                } @else {
+                  <ul class="abuse-detail__stack">
+                    @for (claim of claimItems; track claim.id) {
+                      <li>
+                        <section
+                          class="abuse-detail__panel"
+                          [attr.aria-labelledby]="'claim-title-' + claim.id"
+                        >
+                          <div class="abuse-detail__panel-head">
+                            <h3
+                              [id]="'claim-title-' + claim.id"
+                              class="abuse-detail__panel-title"
+                            >
+                              {{ claim.claimantDisplayName }}
+                            </h3>
+                            <app-badge [variant]="claimBadge(claim.status)">
+                              {{ claimStatusLabel(claim.status) }}
+                            </app-badge>
                           </div>
-                          <div>
-                            <dt>
-                              {{
-                                "admin.abuse.investigation.submitted_at"
-                                  | translate
-                              }}
-                            </dt>
-                            <dd>{{ claim.submittedAt | appDate }}</dd>
-                          </div>
-                          <div>
-                            <dt>
-                              {{
-                                "admin.abuse.investigation.claim_answer"
-                                  | translate
-                              }}
-                            </dt>
-                            <dd class="abuse-detail__pre">
-                              {{ claim.submittedAnswer }}
-                            </dd>
-                          </div>
-                          @if (claim.decisionReason) {
-                            <div>
+                          <dl class="abuse-detail__grid">
+                            <div class="abuse-detail__grid-item">
                               <dt>
                                 {{
-                                  "admin.abuse.investigation.decision_reason"
+                                  "admin.abuse.investigation.claim_attempt"
                                     | translate
                                 }}
                               </dt>
-                              <dd>{{ decisionLabel(claim.decisionReason) }}</dd>
+                              <dd>{{ claim.attemptNumber }}</dd>
                             </div>
-                          }
-                        </dl>
-                        @if (claim.photoUrl) {
-                          <figure class="abuse-detail__figure">
-                            <img
-                              class="abuse-detail__photo"
-                              [src]="claim.photoUrl"
-                              [alt]="
-                                'admin.abuse.investigation.claim_photo'
-                                  | translate
-                              "
-                              loading="lazy"
-                              referrerpolicy="no-referrer"
-                            />
-                            <figcaption class="abuse-detail__hint">
-                              {{
-                                "admin.abuse.investigation.claim_photo"
-                                  | translate
-                              }}
-                            </figcaption>
-                          </figure>
-                        }
-                      </app-card>
-                    </li>
-                  }
-                </ul>
-              }
-            } @else {
-              <app-loading-indicator
-                [label]="'admin.abuse.investigation.loading' | translate"
-              />
-            }
-          </div>
-        } @else {
-          <div role="tabpanel" aria-labelledby="abuse-investigation-title">
-            @if (photos(); as reportPhotos) {
-              @if (reportPhotos.length === 0) {
-                <app-empty-state
-                  [title]="'admin.abuse.investigation.photos_empty' | translate"
-                />
+                            <div class="abuse-detail__grid-item">
+                              <dt>
+                                {{
+                                  "admin.abuse.investigation.submitted_at"
+                                    | translate
+                                }}
+                              </dt>
+                              <dd>{{ claim.submittedAt | appDate }}</dd>
+                            </div>
+                            @if (claim.decisionReason) {
+                              <div class="abuse-detail__grid-item">
+                                <dt>
+                                  {{
+                                    "admin.abuse.investigation.decision_reason"
+                                      | translate
+                                  }}
+                                </dt>
+                                <dd>
+                                  {{ decisionLabel(claim.decisionReason) }}
+                                </dd>
+                              </div>
+                            }
+                            <div
+                              class="abuse-detail__grid-item abuse-detail__grid-item--span"
+                            >
+                              <dt>
+                                {{
+                                  "admin.abuse.investigation.claim_answer"
+                                    | translate
+                                }}
+                              </dt>
+                              <dd class="abuse-detail__pre">
+                                {{ claim.submittedAnswer }}
+                              </dd>
+                            </div>
+                            @if (claim.photoUrl) {
+                              <div
+                                class="abuse-detail__grid-item abuse-detail__grid-item--span"
+                              >
+                                <dt>
+                                  {{
+                                    "admin.abuse.investigation.claim_photo"
+                                      | translate
+                                  }}
+                                </dt>
+                                <dd>
+                                  <img
+                                    class="abuse-detail__photo abuse-detail__photo--claim"
+                                    [src]="claim.photoUrl"
+                                    [alt]="
+                                      'admin.abuse.investigation.claim_photo'
+                                        | translate
+                                    "
+                                    loading="lazy"
+                                    referrerpolicy="no-referrer"
+                                  />
+                                </dd>
+                              </div>
+                            }
+                          </dl>
+                        </section>
+                      </li>
+                    }
+                  </ul>
+                }
               } @else {
-                <ul class="abuse-detail__photos">
-                  @for (photo of reportPhotos; track photo.id) {
-                    <li>
-                      <img
-                        class="abuse-detail__photo"
-                        [src]="photo.url"
-                        [alt]="
-                          'admin.abuse.investigation.photo_alt' | translate
-                        "
-                        loading="lazy"
-                        referrerpolicy="no-referrer"
-                      />
-                    </li>
-                  }
-                </ul>
+                <app-loading-indicator
+                  [label]="'admin.abuse.investigation.loading' | translate"
+                />
               }
-            } @else {
-              <app-loading-indicator
-                [label]="'admin.abuse.investigation.loading' | translate"
-              />
-            }
-          </div>
-        }
-      </section>
-
-      <section
-        class="abuse-detail__resolve"
-        aria-labelledby="abuse-resolve-title"
-      >
-        <h2 id="abuse-resolve-title" class="abuse-detail__heading">
-          {{ "admin.abuse.resolve.title" | translate }}
-        </h2>
-        <p class="abuse-detail__intro">
-          {{ "admin.abuse.resolve.intro" | translate }}
-        </p>
-
-        <form
-          class="abuse-detail__form"
-          [formGroup]="resolveForm"
-          (ngSubmit)="openResolveConfirm()"
-        >
-          <app-form-field
-            [label]="'admin.abuse.resolve.outcome_label' | translate"
-            htmlFor="abuse-outcome"
-            [required]="true"
-          >
-            <select
-              id="abuse-outcome"
-              class="form-select"
-              formControlName="outcome"
-            >
-              <option value="no_action">
-                {{ "admin.abuse.outcome.no_action" | translate }}
-              </option>
-              <option value="takedown">
-                {{ "admin.abuse.outcome.takedown" | translate }}
-              </option>
-              <option value="ban">
-                {{ "admin.abuse.outcome.ban" | translate }}
-              </option>
-            </select>
-          </app-form-field>
-
-          @if (selectedOutcome() === "takedown" && !canTakedown()) {
-            <app-alert variant="warning">
-              {{ "admin.abuse.resolve.takedown_unavailable" | translate }}
-            </app-alert>
+            </div>
+          } @else {
+            <div role="tabpanel" aria-labelledby="abuse-investigation-title">
+              @if (photos(); as reportPhotos) {
+                @if (reportPhotos.length === 0) {
+                  <app-empty-state
+                    [inset]="true"
+                    icon="camera"
+                    [title]="
+                      'admin.abuse.investigation.photos_empty' | translate
+                    "
+                    [description]="
+                      'admin.abuse.investigation.photos_empty_desc' | translate
+                    "
+                  />
+                } @else {
+                  <ul class="abuse-detail__photos">
+                    @for (photo of reportPhotos; track photo.id) {
+                      <li>
+                        <img
+                          class="abuse-detail__photo"
+                          [src]="photo.url"
+                          [alt]="
+                            'admin.abuse.investigation.photo_alt' | translate
+                          "
+                          loading="lazy"
+                          referrerpolicy="no-referrer"
+                        />
+                      </li>
+                    }
+                  </ul>
+                }
+              } @else {
+                <app-loading-indicator
+                  [label]="'admin.abuse.investigation.loading' | translate"
+                />
+              }
+            </div>
           }
+        </section>
 
-          @if (selectedOutcome() === "ban") {
+        <section
+          class="abuse-detail__panel abuse-detail__resolve"
+          aria-labelledby="abuse-resolve-title"
+        >
+          <h2 id="abuse-resolve-title" class="abuse-detail__panel-title">
+            {{ "admin.abuse.resolve.title" | translate }}
+          </h2>
+          <p class="abuse-detail__intro">
+            {{ "admin.abuse.resolve.intro" | translate }}
+          </p>
+
+          <form
+            class="abuse-detail__form"
+            [formGroup]="resolveForm"
+            (ngSubmit)="openResolveConfirm()"
+          >
             <app-form-field
-              [label]="'admin.abuse.resolve.ban_target_label' | translate"
-              htmlFor="abuse-ban-target"
+              [label]="'admin.abuse.resolve.outcome_label' | translate"
+              htmlFor="abuse-outcome"
               [required]="true"
             >
               <select
-                id="abuse-ban-target"
+                id="abuse-outcome"
                 class="form-select"
-                formControlName="banTargetUserId"
+                formControlName="outcome"
               >
-                @for (target of banTargets(); track target.id) {
-                  <option [value]="target.id">{{ target.label }}</option>
-                }
+                <option value="no_action">
+                  {{ "admin.abuse.outcome.no_action" | translate }}
+                </option>
+                <option value="takedown">
+                  {{ "admin.abuse.outcome.takedown" | translate }}
+                </option>
+                <option value="ban">
+                  {{ "admin.abuse.outcome.ban" | translate }}
+                </option>
               </select>
             </app-form-field>
-            <app-form-field
-              [label]="'admin.abuse.resolve.ban_reason_label' | translate"
-              [hint]="'admin.abuse.resolve.ban_reason_hint' | translate"
-              [error]="noteError()"
-              [required]="true"
-              htmlFor="abuse-ban-reason"
-            >
-              <textarea
-                id="abuse-ban-reason"
-                class="form-textarea"
-                rows="3"
-                maxlength="500"
-                formControlName="adminNote"
-                [placeholder]="
-                  'admin.abuse.resolve.ban_reason_placeholder' | translate
-                "
-              ></textarea>
-            </app-form-field>
-          } @else if (selectedOutcome() === "takedown") {
-            <app-form-field
-              [label]="'admin.abuse.resolve.note_label' | translate"
-              [hint]="'admin.abuse.resolve.note_hint' | translate"
-              htmlFor="abuse-admin-note"
-            >
-              <textarea
-                id="abuse-admin-note"
-                class="form-textarea"
-                rows="3"
-                maxlength="500"
-                formControlName="adminNote"
-                [placeholder]="
-                  'admin.abuse.resolve.note_placeholder' | translate
-                "
-              ></textarea>
-            </app-form-field>
-          }
 
-          <app-button
-            type="submit"
-            [variant]="selectedOutcome() === 'no_action' ? 'primary' : 'danger'"
-            [disabled]="resolving()"
-          >
-            {{ "admin.abuse.resolve.submit" | translate }}
-          </app-button>
-        </form>
-      </section>
-    } @else {
-      <app-alert variant="info">
-        {{ "admin.abuse.investigation.closed" | translate }}
-      </app-alert>
-    }
+            @if (selectedOutcome() === "takedown" && !canTakedown()) {
+              <app-alert variant="warning">
+                {{ "admin.abuse.resolve.takedown_unavailable" | translate }}
+              </app-alert>
+            }
+
+            @if (selectedOutcome() === "ban") {
+              <app-form-field
+                [label]="'admin.abuse.resolve.ban_target_label' | translate"
+                htmlFor="abuse-ban-target"
+                [required]="true"
+              >
+                <select
+                  id="abuse-ban-target"
+                  class="form-select"
+                  formControlName="banTargetUserId"
+                >
+                  @for (target of banTargets(); track target.id) {
+                    <option [value]="target.id">{{ target.label }}</option>
+                  }
+                </select>
+              </app-form-field>
+              <app-form-field
+                [label]="'admin.abuse.resolve.ban_reason_label' | translate"
+                [hint]="'admin.abuse.resolve.ban_reason_hint' | translate"
+                [error]="noteError()"
+                [required]="true"
+                htmlFor="abuse-ban-reason"
+              >
+                <textarea
+                  id="abuse-ban-reason"
+                  class="form-textarea"
+                  rows="3"
+                  maxlength="500"
+                  formControlName="adminNote"
+                  [placeholder]="
+                    'admin.abuse.resolve.ban_reason_placeholder' | translate
+                  "
+                ></textarea>
+              </app-form-field>
+            } @else if (selectedOutcome() === "takedown") {
+              <app-form-field
+                [label]="'admin.abuse.resolve.note_label' | translate"
+                [hint]="'admin.abuse.resolve.note_hint' | translate"
+                htmlFor="abuse-admin-note"
+              >
+                <textarea
+                  id="abuse-admin-note"
+                  class="form-textarea"
+                  rows="3"
+                  maxlength="500"
+                  formControlName="adminNote"
+                  [placeholder]="
+                    'admin.abuse.resolve.note_placeholder' | translate
+                  "
+                ></textarea>
+              </app-form-field>
+            }
+
+            <app-button
+              type="submit"
+              [variant]="
+                selectedOutcome() === 'no_action' ? 'primary' : 'danger'
+              "
+              [disabled]="resolving()"
+            >
+              {{ "admin.abuse.resolve.submit" | translate }}
+            </app-button>
+          </form>
+        </section>
+      } @else {
+        <app-alert variant="info">
+          {{ "admin.abuse.investigation.closed" | translate }}
+        </app-alert>
+      }
+    </div>
 
     @if (showResolveConfirm()) {
       <app-confirm-dialog
@@ -491,6 +636,17 @@
         [disabled]="resolving()"
         (cancelled)="closeResolveConfirm()"
         (confirmed)="confirmResolve()"
+      />
+    }
+
+    @if (actionFeedback(); as feedback) {
+      <app-action-feedback-dialog
+        titleId="abuse-detail-action-feedback-title"
+        [title]="feedback.title"
+        [message]="feedback.message"
+        [closeLabel]="'common.dialog.close_now' | translate"
+        [countdownLabel]="'common.dialog.auto_close' | translate"
+        (closed)="closeActionFeedback()"
       />
     }
   }

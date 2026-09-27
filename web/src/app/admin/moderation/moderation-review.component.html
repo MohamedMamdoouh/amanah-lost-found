@@ -1,40 +1,33 @@
-<section class="moderation-review page-container--wide" aria-labelledby="moderation-review-title">
+<section
+  class="moderation-review page-container--wide"
+  aria-labelledby="moderation-review-title"
+>
   @if (loading()) {
     <app-loading-indicator [label]="'reports.detail.loading' | translate" />
   } @else if (error()) {
     <app-alert variant="error">{{ error() }}</app-alert>
   } @else if (report()) {
     @let detail = report()!;
-    <app-page-header
-      [backLink]="'/admin/moderation'"
+    <app-report-masthead
+      backLink="/admin/moderation"
       [backLabel]="'admin.moderation.back' | translate"
       [title]="detail.title"
-      [intro]="(detail.createdAt | appDate) ?? ''"
-    >
-      <app-report-type-mark [type]="detail.type" />
-    </app-page-header>
-
-    <app-report-dossier
-      [report]="detail"
-      [photos]="photos()"
+      titleId="moderation-review-title"
+      [reportType]="detail.type"
+      [badgeLabel]="domainLabels.reportBadgeLabel(detail.status, 'mine')"
+      [badgeVariant]="domainLabels.reportBadgeVariant(detail.status, 'mine')"
     />
+
+    <app-report-dossier [report]="detail" [photos]="photos()" />
 
     @if (actionError()) {
       <app-alert variant="error">{{ actionError() }}</app-alert>
     }
 
-    @if (report()?.status === 'pending_review') {
+    @if (report()?.status === "pending_review") {
       <div class="moderation-review__actions cluster">
-        <app-button
-          variant="primary"
-          [loading]="approving()"
-          (clicked)="approveReport()"
-        >
-          {{
-            approving()
-              ? ("admin.moderation.approving" | translate)
-              : ("admin.moderation.approve" | translate)
-          }}
+        <app-button variant="primary" (clicked)="openApproveConfirm()">
+          {{ "admin.moderation.approve" | translate }}
         </app-button>
         <app-button variant="danger" (clicked)="openReject()">
           {{ "admin.moderation.reject" | translate }}
@@ -42,45 +35,36 @@
       </div>
     }
 
-    @if (showReject()) {
-      <form
-        class="moderation-review__reject-form"
-        [formGroup]="rejectForm"
-        (ngSubmit)="submitReject()"
-      >
-        <label class="form-field">
-          <span class="form-label">{{ "admin.moderation.reject_reason" | translate }}</span>
-          <select class="form-select" formControlName="reasonCode">
-            <option value="" disabled>
-              {{ "admin.moderation.reject_reason" | translate }}
-            </option>
-            @for (code of rejectionReasons; track code) {
-              <option [value]="code">{{ reasonLabel(code) }}</option>
-            }
-          </select>
-        </label>
-        <label class="form-field">
-          <span class="form-label">{{ "admin.moderation.reject_note" | translate }}</span>
-          <textarea class="form-textarea" formControlName="note" rows="3"></textarea>
-        </label>
-        <div class="moderation-review__reject-actions cluster">
-          <app-button type="button" variant="ghost" (clicked)="closeReject()">
-            {{ "reports.withdraw.cancel" | translate }}
-          </app-button>
-          <app-button
-            type="submit"
-            variant="danger"
-            [disabled]="rejectForm.invalid"
-            [loading]="rejecting()"
-          >
-            {{
-              rejecting()
-                ? ("admin.moderation.rejecting" | translate)
-                : ("admin.moderation.reject_submit" | translate)
-            }}
-          </app-button>
-        </div>
-      </form>
+    @if (showApproveConfirm()) {
+      <app-confirm-dialog
+        titleId="approve-report-title"
+        [title]="'admin.moderation.approve_title' | translate"
+        [intro]="'admin.moderation.approve_intro' | translate"
+        [cancelLabel]="'reports.withdraw.cancel' | translate"
+        [confirmLabel]="'admin.moderation.approve_confirm' | translate"
+        [loading]="approving()"
+        (cancelled)="closeApproveConfirm()"
+        (confirmed)="confirmApprove()"
+      />
+    }
+
+    @if (showRejectDialog()) {
+      <app-reject-report-dialog
+        [reportId]="detail.id"
+        (closed)="closeReject()"
+        (rejected)="onRejected()"
+      />
+    }
+
+    @if (actionFeedback(); as feedback) {
+      <app-action-feedback-dialog
+        titleId="moderation-action-feedback-title"
+        [title]="feedback.title"
+        [message]="feedback.message"
+        [closeLabel]="'common.dialog.close_now' | translate"
+        [countdownLabel]="'common.dialog.auto_close' | translate"
+        (closed)="closeActionFeedback()"
+      />
     }
   }
 </section>
