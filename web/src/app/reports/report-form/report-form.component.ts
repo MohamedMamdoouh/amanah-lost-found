@@ -29,6 +29,8 @@ import { ReportService } from '../report.service';
 import {
   buildCategoryFieldsGroup,
   buildCreateReportRequest,
+  REPORT_TITLE_MAX_LENGTH,
+  reportTitleValidators,
 } from '../shared/report-form.helpers';
 
 @Component({
@@ -71,13 +73,11 @@ export class ReportFormComponent implements OnInit {
   readonly selectedCategory = signal<Category | null>(null);
   readonly selectedPhotos = signal<File[]>([]);
   readonly today = this.formatDate(new Date());
+  readonly reportTitleMaxLength = REPORT_TITLE_MAX_LENGTH;
 
   readonly form = this.fb.nonNullable.group({
     categoryCode: ['', Validators.required],
-    title: [
-      '',
-      [Validators.required, Validators.minLength(10), Validators.maxLength(80)],
-    ],
+    title: ['', reportTitleValidators],
     description: [
       '',
       [

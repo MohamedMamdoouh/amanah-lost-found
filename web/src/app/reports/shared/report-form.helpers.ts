@@ -1,4 +1,13 @@
-import { FormBuilder, Validators } from '@angular/forms';
+import { FormBuilder, ValidatorFn, Validators } from '@angular/forms';
+
+export const REPORT_TITLE_MIN_LENGTH = 5;
+export const REPORT_TITLE_MAX_LENGTH = 80;
+
+export const reportTitleValidators: ValidatorFn[] = [
+  Validators.required,
+  Validators.minLength(REPORT_TITLE_MIN_LENGTH),
+  Validators.maxLength(REPORT_TITLE_MAX_LENGTH),
+];
 
 import { Category, CategoryFieldDefinition } from '../../catalog/models/catalog.models';
 import {

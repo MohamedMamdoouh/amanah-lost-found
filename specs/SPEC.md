@@ -86,7 +86,7 @@ Build a **real product** (not just a portfolio demo) that real people across Egy
 1. User signs up/logs in via phone number + OTP and sets a display name; accepts Terms (5.1).
 2. User selects **"I lost something"**, picks a category, and fills in:
 
-- **Title** (required, 10-80 characters).
+- **Title** (required, 5-80 characters).
 - **Description** (required, 20-1,000 characters).
 - **Date lost** (required, exact date - no time). Must not be in the future and must not be more than **12 months** ago.
 - Category-specific fields (5.2).

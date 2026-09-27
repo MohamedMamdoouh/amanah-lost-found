@@ -115,7 +115,7 @@
             type="text"
             formControlName="title"
             class="form-input"
-            maxlength="80"
+            [attr.maxlength]="reportTitleMaxLength"
             [class.form-input--error]="isControlInvalid('title')"
           />
           <span class="form-hint">{{

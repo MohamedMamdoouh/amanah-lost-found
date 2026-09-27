@@ -1,6 +1,7 @@
 using Amanah.Api.Data.Entities;
 using Amanah.Api.Utilities.Common;
 using Amanah.Api.Utilities.Reports;
+using Amanah.Contracts.Errors;
 
 namespace Amanah.Api.Tests.Utilities;
 
@@ -261,6 +262,37 @@ public class SearchTextBuilderTests
 
 public class ReportContentValidatorTests
 {
+    [Fact]
+    public void Validate_rejects_title_shorter_than_five_characters()
+    {
+        var errors = ReportContentValidator.Validate(
+            isFoundReport: false,
+            title: "abcd",
+            description: "I lost my wallet near the station yesterday evening.",
+            areaText: null,
+            hasReward: false,
+            rewardAmount: null,
+            heldLocation: null);
+
+        Assert.Contains(ReportContentValidator.TitleField, errors.Keys);
+        Assert.Contains(ErrorCodes.FieldReportTitleTooShort, errors[ReportContentValidator.TitleField]);
+    }
+
+    [Fact]
+    public void Validate_accepts_title_with_five_characters()
+    {
+        var errors = ReportContentValidator.Validate(
+            isFoundReport: false,
+            title: "abcde",
+            description: "I lost my wallet near the station yesterday evening.",
+            areaText: null,
+            hasReward: false,
+            rewardAmount: null,
+            heldLocation: null);
+
+        Assert.DoesNotContain(ReportContentValidator.TitleField, errors.Keys);
+    }
+
     [Fact]
     public void Validate_accepts_valid_lost_report_content()
     {
