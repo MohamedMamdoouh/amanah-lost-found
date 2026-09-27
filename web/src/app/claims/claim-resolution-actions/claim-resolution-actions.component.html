@@ -7,43 +7,56 @@
     class="claim-resolution"
     aria-labelledby="claim-resolution-title"
   >
-    <h2 id="claim-resolution-title">
-      {{ "claims.resolution.title" | translate }}
-    </h2>
-    <p class="claim-resolution__intro">
-      {{ "claims.resolution.intro" | translate }}
-    </p>
+    <div class="claim-resolution__panel">
+      <header class="claim-resolution__head">
+        <h2 id="claim-resolution-title" class="claim-resolution__title">
+          {{ "claims.resolution.title" | translate }}
+        </h2>
+        <p class="claim-resolution__intro">
+          {{ "claims.resolution.intro" | translate }}
+        </p>
+      </header>
 
-    @if (actionError()) {
-      <app-alert variant="error">{{ actionError() }}</app-alert>
-    }
+      @if (actionError()) {
+        <app-alert variant="error">{{ actionError() }}</app-alert>
+      }
 
-    @if (statusMessage(); as status) {
-      <p class="claim-resolution__status">{{ status }}</p>
-    }
+      @if (statusMessage(); as status) {
+        <div
+          class="claim-resolution__status"
+          [class.claim-resolution__status--resolved]="statusIsResolved()"
+          role="status"
+        >
+          @if (statusIcon(); as icon) {
+            <app-icon [name]="icon" size="sm" class="claim-resolution__status-icon" />
+          }
+          <p class="claim-resolution__status-text">{{ status }}</p>
+        </div>
+      }
 
-    @if (canConfirm() || canCancel()) {
-      <div class="claim-resolution__actions">
-        @if (canConfirm()) {
-          <app-button
-            variant="primary"
-            [disabled]="acting()"
-            (clicked)="openConfirmDialog()"
-          >
-            {{ "claims.resolution.confirm_button" | translate }}
-          </app-button>
-        }
-        @if (canCancel()) {
-          <app-button
-            variant="outline"
-            [disabled]="acting()"
-            (clicked)="openCancelDialog()"
-          >
-            {{ "claims.resolution.cancel_button" | translate }}
-          </app-button>
-        }
-      </div>
-    }
+      @if (canConfirm() || canCancel()) {
+        <footer class="claim-resolution__actions">
+          @if (canConfirm()) {
+            <app-button
+              variant="primary"
+              [disabled]="acting()"
+              (clicked)="openConfirmDialog()"
+            >
+              {{ "claims.resolution.confirm_button" | translate }}
+            </app-button>
+          }
+          @if (canCancel()) {
+            <app-button
+              variant="outline"
+              [disabled]="acting()"
+              (clicked)="openCancelDialog()"
+            >
+              {{ "claims.resolution.cancel_button" | translate }}
+            </app-button>
+          }
+        </footer>
+      }
+    </div>
 
     @if (showConfirmDialog()) {
       <app-confirm-dialog
@@ -71,6 +84,17 @@
         [disabled]="acting()"
         (cancelled)="closeDialogs()"
         (confirmed)="cancelClaim()"
+      />
+    }
+
+    @if (actionFeedback(); as feedback) {
+      <app-action-feedback-dialog
+        titleId="claim-resolution-action-feedback-title"
+        [title]="feedback.title"
+        [message]="feedback.message"
+        [closeLabel]="'common.dialog.close_now' | translate"
+        [countdownLabel]="'common.dialog.auto_close' | translate"
+        (closed)="closeActionFeedback()"
       />
     }
   </section>

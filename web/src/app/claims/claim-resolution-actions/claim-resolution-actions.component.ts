@@ -10,9 +10,14 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
 import { ApiErrorService } from '../../i18n/api-error.service';
+import {
+  ActionFeedbackDialogComponent,
+  ActionFeedbackState,
+} from '../../shared/ui/action-feedback-dialog/action-feedback-dialog.component';
 import { ConfirmDialogComponent } from '../../shared/ui/confirm-dialog/confirm-dialog.component';
 import { AlertComponent } from '../../shared/ui/alert/alert.component';
 import { ButtonComponent } from '../../shared/ui/button/button.component';
+import { IconComponent, IconName } from '../../shared/ui/icon/icon.component';
 import { LoadingIndicatorComponent } from '../../shared/ui/loading-indicator/loading-indicator.component';
 import { ClaimService } from '../claim.service';
 import { ClaimDetail } from '../models/claim.models';
@@ -29,6 +34,8 @@ import {
   imports: [
     AlertComponent,
     ButtonComponent,
+    IconComponent,
+    ActionFeedbackDialogComponent,
     ConfirmDialogComponent,
     LoadingIndicatorComponent,
     TranslateModule,
@@ -52,6 +59,7 @@ export class ClaimResolutionActionsComponent implements OnInit {
   readonly acting = signal(false);
   readonly showConfirmDialog = signal(false);
   readonly showCancelDialog = signal(false);
+  readonly actionFeedback = signal<ActionFeedbackState | null>(null);
 
   ngOnInit(): void {
     void this.loadClaim();
@@ -64,6 +72,27 @@ export class ClaimResolutionActionsComponent implements OnInit {
   statusMessage(): string | null {
     const key = resolutionStatusMessageKey(this.claim());
     return key ? this.translate.instant(key) : null;
+  }
+
+  statusMessageKey(): string | null {
+    return resolutionStatusMessageKey(this.claim());
+  }
+
+  statusIsResolved(): boolean {
+    return this.statusMessageKey() === 'claims.resolution.status_resolved';
+  }
+
+  statusIcon(): IconName | null {
+    switch (this.statusMessageKey()) {
+      case 'claims.resolution.status_resolved':
+        return 'check';
+      case 'claims.resolution.status_awaiting_you':
+      case 'claims.resolution.status_awaiting_counterparty':
+      case 'claims.resolution.status_pending':
+        return 'clock';
+      default:
+        return null;
+    }
   }
 
   canConfirm(): boolean {
@@ -91,6 +120,12 @@ export class ClaimResolutionActionsComponent implements OnInit {
     this.showCancelDialog.set(false);
   }
 
+  closeActionFeedback(): void {
+    const feedback = this.actionFeedback();
+    this.actionFeedback.set(null);
+    feedback?.onClosed?.();
+  }
+
   async confirmResolution(): Promise<void> {
     if (this.acting()) {
       return;
@@ -106,6 +141,10 @@ export class ClaimResolutionActionsComponent implements OnInit {
       this.closeDialogs();
       await this.loadClaim();
       this.changed.emit();
+      this.actionFeedback.set({
+        title: this.translate.instant('common.dialog.done_title'),
+        message: this.translate.instant('claims.resolution.confirm_done'),
+      });
     } catch (error) {
       this.actionError.set(
         this.apiErrors.messageFromHttpError(error, {
@@ -130,6 +169,10 @@ export class ClaimResolutionActionsComponent implements OnInit {
       this.closeDialogs();
       await this.loadClaim();
       this.changed.emit();
+      this.actionFeedback.set({
+        title: this.translate.instant('common.dialog.done_title'),
+        message: this.translate.instant('claims.resolution.cancel_done'),
+      });
     } catch (error) {
       this.actionError.set(
         this.apiErrors.messageFromHttpError(error, {

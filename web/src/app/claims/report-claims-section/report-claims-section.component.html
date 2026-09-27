@@ -3,85 +3,157 @@
   id="claims-section"
   aria-labelledby="report-claims-title"
 >
-  <h2 id="report-claims-title">{{ "claims.review.title" | translate }}</h2>
-  <p class="report-claims__intro">{{ "claims.review.intro" | translate }}</p>
-
-  @if (actionError()) {
-    <app-alert variant="error">{{ actionError() }}</app-alert>
-  }
-
-  @if (loading()) {
-    <app-loading-indicator [label]="'claims.review.loading' | translate" />
-  } @else if (error()) {
-    <app-alert variant="error">{{ error() }}</app-alert>
-  } @else if (claims().length === 0) {
-    <p class="report-claims__empty">{{ "claims.review.empty" | translate }}</p>
-  } @else {
-    <ul class="report-claims__list">
-      @for (claim of claims(); track claim.id) {
-        <li class="report-claims__card">
-          <div class="report-claims__header">
-            <div>
-              <p class="report-claims__claimant">{{ claim.claimantDisplayName }}</p>
-              <p class="report-claims__meta">
-                {{ claim.submittedAt | appDate }}
-                · {{ "claims.review.attempt" | translate: { n: claim.attemptNumber } }}
-              </p>
-            </div>
-            <app-badge [variant]="domainLabels.claimBadgeVariant(claim.status)">
-              {{ domainLabels.claimStatus(claim.status) }}
-            </app-badge>
-          </div>
-
-          <p class="report-claims__answer">{{ claim.submittedAnswer }}</p>
-
-          @if (claim.hasPhoto) {
-            <div class="report-claims__photo">
-              @if (photoState(claim.id); as photo) {
-                @if (photo.loading) {
-                  <span class="report-claims__photo-loading">
-                    <app-spinner size="sm" />
-                    {{ "reports.detail.photo_loading" | translate }}
-                  </span>
-                } @else if (photo.url) {
-                  <img
-                    [src]="photo.url"
-                    alt=""
-                    class="report-claims__photo-image"
-                  />
-                }
-              }
-            </div>
+  <div
+    class="report-claims__panel"
+    [class.report-claims__panel--attention]="pendingCount() > 0"
+  >
+    <header class="report-claims__head">
+      <div class="report-claims__head-main">
+        <h2 id="report-claims-title" class="report-claims__title">
+          {{ "claims.review.title" | translate }}
+        </h2>
+        <p class="report-claims__intro">
+          {{ "claims.review.intro" | translate }}
+        </p>
+      </div>
+      @if (!loading() && !error() && claims().length > 0) {
+        <div class="report-claims__summary" aria-live="polite">
+          <span class="report-claims__summary-value">{{
+            claims().length
+          }}</span>
+          <span class="report-claims__summary-label">{{
+            "claims.review.count_label" | translate
+          }}</span>
+          @if (pendingCount() > 0) {
+            <span class="report-claims__summary-pending">{{
+              "claims.review.pending_count"
+                | translate: { n: pendingCount() }
+            }}</span>
           }
-
-          @if (claim.decisionReason) {
-            <p class="report-claims__reason">{{ claim.decisionReason }}</p>
-          }
-
-          @if (canActOn(claim)) {
-            <div class="report-claims__actions">
-              <app-button
-                variant="primary"
-                size="sm"
-                [disabled]="actingClaimId() !== null"
-                (clicked)="openApprove(claim.id)"
-              >
-                {{ "claims.review.approve" | translate }}
-              </app-button>
-              <app-button
-                variant="outline"
-                size="sm"
-                [disabled]="actingClaimId() !== null"
-                (clicked)="openReject(claim.id)"
-              >
-                {{ "claims.review.reject" | translate }}
-              </app-button>
-            </div>
-          }
-        </li>
+        </div>
       }
-    </ul>
-  }
+    </header>
+
+    @if (actionError()) {
+      <app-alert variant="error">{{ actionError() }}</app-alert>
+    }
+
+    @if (loading()) {
+      <app-loading-indicator [label]="'claims.review.loading' | translate" />
+    } @else if (error()) {
+      <app-alert variant="error">{{ error() }}</app-alert>
+    } @else if (claims().length === 0) {
+      <div class="report-claims__empty" role="status">
+        <div class="report-claims__empty-icon" aria-hidden="true">
+          <app-icon name="shield" size="lg" />
+        </div>
+        <p class="report-claims__empty-text">
+          {{ "claims.review.empty" | translate }}
+        </p>
+      </div>
+    } @else {
+      <ul class="report-claims__list">
+        @for (claim of claims(); track claim.id) {
+          <li
+            class="report-claims__card"
+            [class.report-claims__card--pending]="claim.status === 'pending'"
+          >
+            <header class="report-claims__card-head">
+              <div class="report-claims__identity">
+                <p class="report-claims__claimant">
+                  <app-icon name="person" size="sm" />
+                  <span>{{ claim.claimantDisplayName }}</span>
+                </p>
+                <p class="report-claims__meta">
+                  <span class="report-claims__meta-item">
+                    <app-icon name="calendar" size="sm" />
+                    <time [dateTime]="claim.submittedAt">
+                      {{ claim.submittedAt | appDate }}
+                    </time>
+                  </span>
+                  <span class="report-claims__meta-sep" aria-hidden="true"
+                    >·</span
+                  >
+                  <span class="report-claims__meta-item">
+                    <app-icon name="shield" size="sm" />
+                    <span>{{
+                      "claims.review.attempt"
+                        | translate: { n: claim.attemptNumber }
+                    }}</span>
+                  </span>
+                </p>
+              </div>
+              <app-badge [variant]="domainLabels.claimBadgeVariant(claim.status)">
+                {{ domainLabels.claimStatus(claim.status) }}
+              </app-badge>
+            </header>
+
+            <div class="report-claims__answer-block">
+              <p class="report-claims__answer-label">
+                {{ "claims.review.answer_label" | translate }}
+              </p>
+              <blockquote class="report-claims__answer">
+                {{ claim.submittedAnswer }}
+              </blockquote>
+            </div>
+
+            @if (claim.hasPhoto) {
+              <div class="report-claims__photo">
+                <p class="report-claims__photo-label">
+                  <app-icon name="camera" size="sm" />
+                  <span>{{ "claims.review.photo_label" | translate }}</span>
+                </p>
+                @if (photoState(claim.id); as photo) {
+                  @if (photo.loading) {
+                    <span class="report-claims__photo-loading">
+                      <app-spinner size="sm" />
+                      {{ "reports.detail.photo_loading" | translate }}
+                    </span>
+                  } @else if (photo.url) {
+                    <img
+                      [src]="photo.url"
+                      alt=""
+                      class="report-claims__photo-image"
+                    />
+                  }
+                }
+              </div>
+            }
+
+            @if (claim.decisionReason) {
+              <p class="report-claims__reason">
+                <span class="report-claims__reason-label">{{
+                  "claims.review.decision_reason_label" | translate
+                }}</span>
+                {{ claim.decisionReason }}
+              </p>
+            }
+
+            @if (canActOn(claim)) {
+              <footer class="report-claims__actions">
+                <app-button
+                  variant="primary"
+                  size="sm"
+                  [disabled]="actingClaimId() !== null"
+                  (clicked)="openApprove(claim.id)"
+                >
+                  {{ "claims.review.approve" | translate }}
+                </app-button>
+                <app-button
+                  variant="outline"
+                  size="sm"
+                  [disabled]="actingClaimId() !== null"
+                  (clicked)="openReject(claim.id)"
+                >
+                  {{ "claims.review.reject" | translate }}
+                </app-button>
+              </footer>
+            }
+          </li>
+        }
+      </ul>
+    }
+  </div>
 
   @if (confirmApproveId()) {
     <app-confirm-dialog
@@ -107,6 +179,17 @@
       [loading]="actingClaimId() === confirmRejectId()"
       (cancelled)="closeDialogs()"
       (confirmed)="confirmReject()"
+    />
+  }
+
+  @if (actionFeedback(); as feedback) {
+    <app-action-feedback-dialog
+      titleId="report-claims-action-feedback-title"
+      [title]="feedback.title"
+      [message]="feedback.message"
+      [closeLabel]="'common.dialog.close_now' | translate"
+      [countdownLabel]="'common.dialog.auto_close' | translate"
+      (closed)="closeActionFeedback()"
     />
   }
 </section>

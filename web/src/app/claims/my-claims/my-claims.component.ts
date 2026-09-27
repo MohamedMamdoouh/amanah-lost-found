@@ -6,8 +6,13 @@ import { firstValueFrom } from 'rxjs';
 
 import { ApiErrorService } from '../../i18n/api-error.service';
 import { DomainLabelService } from '../../i18n/domain-label.service';
+import {
+  ActionFeedbackDialogComponent,
+  ActionFeedbackState,
+} from '../../shared/ui/action-feedback-dialog/action-feedback-dialog.component';
 import { AlertComponent } from '../../shared/ui/alert/alert.component';
 import { ButtonComponent } from '../../shared/ui/button/button.component';
+import { ConfirmDialogComponent } from '../../shared/ui/confirm-dialog/confirm-dialog.component';
 import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.component';
 import { ListingCardComponent } from '../../shared/ui/listing-card/listing-card.component';
 import { LoadingIndicatorComponent } from '../../shared/ui/loading-indicator/loading-indicator.component';
@@ -20,8 +25,10 @@ import { MyClaimSummary } from '../models/claim.models';
   standalone: true,
   imports: [
     AppDatePipe,
+    ActionFeedbackDialogComponent,
     AlertComponent,
     ButtonComponent,
+    ConfirmDialogComponent,
     EmptyStateComponent,
     ListingCardComponent,
     LoadingIndicatorComponent,
@@ -42,7 +49,9 @@ export class MyClaimsComponent implements OnInit {
   readonly error = signal<string | null>(null);
   readonly claims = signal<MyClaimSummary[]>([]);
   readonly withdrawingId = signal<string | null>(null);
+  readonly confirmWithdrawId = signal<string | null>(null);
   readonly actionError = signal<string | null>(null);
+  readonly actionFeedback = signal<ActionFeedbackState | null>(null);
 
   ngOnInit(): void {
     void this.loadClaims();
@@ -56,21 +65,42 @@ export class MyClaimsComponent implements OnInit {
     return claim.status === 'pending';
   }
 
-  async withdraw(claim: MyClaimSummary): Promise<void> {
-    if (this.withdrawingId()) {
+  openWithdraw(claim: MyClaimSummary): void {
+    this.actionError.set(null);
+    this.confirmWithdrawId.set(claim.id);
+  }
+
+  onWithdrawClick(event: MouseEvent, claim: MyClaimSummary): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.openWithdraw(claim);
+  }
+
+  closeWithdrawConfirm(): void {
+    this.confirmWithdrawId.set(null);
+  }
+
+  async confirmWithdraw(): Promise<void> {
+    const claimId = this.confirmWithdrawId();
+    if (!claimId || this.withdrawingId()) {
       return;
     }
 
-    this.withdrawingId.set(claim.id);
+    this.withdrawingId.set(claimId);
     this.actionError.set(null);
 
     try {
-      await firstValueFrom(this.claimService.withdraw(claim.id));
+      await firstValueFrom(this.claimService.withdraw(claimId));
       this.claims.update((current) =>
         current.map((item) =>
-          item.id === claim.id ? { ...item, status: 'withdrawn' } : item,
+          item.id === claimId ? { ...item, status: 'withdrawn' } : item,
         ),
       );
+      this.closeWithdrawConfirm();
+      this.actionFeedback.set({
+        title: this.translate.instant('common.dialog.done_title'),
+        message: this.translate.instant('claims.mine.withdraw_done'),
+      });
     } catch (error) {
       this.actionError.set(
         this.apiErrors.messageFromHttpError(error, {
@@ -80,6 +110,12 @@ export class MyClaimsComponent implements OnInit {
     } finally {
       this.withdrawingId.set(null);
     }
+  }
+
+  closeActionFeedback(): void {
+    const feedback = this.actionFeedback();
+    this.actionFeedback.set(null);
+    feedback?.onClosed?.();
   }
 
   private async loadClaims(): Promise<void> {

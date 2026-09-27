@@ -2,22 +2,67 @@
   margin-top: var(--space-lg);
 }
 
-.claim-resolution h2 {
-  font-size: 1rem;
+.claim-resolution__panel {
+  display: grid;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-inline-start: 3px solid var(--color-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.claim-resolution__title {
   margin: 0 0 var(--space-xs);
+  font-family: var(--font-display);
+  font-size: var(--font-size-lg);
+  font-weight: 800;
+  line-height: var(--line-height-tight);
+  color: var(--color-text);
 }
 
-.claim-resolution__intro,
-.claim-resolution__status {
-  margin: 0 0 var(--space-md);
-  color: var(--color-text-muted);
+.claim-resolution__intro {
+  margin: 0;
+  font-size: var(--font-size-sm);
   line-height: var(--line-height-base);
+  color: var(--color-text-muted);
 }
 
 .claim-resolution__status {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
   padding: var(--space-sm) var(--space-md);
-  background: var(--color-accent-soft);
+  background: var(--color-highlight);
+  border-inline-start: 2px solid var(--color-border);
   border-radius: var(--radius-sm);
+}
+
+.claim-resolution__status--resolved {
+  background: var(--color-success-bg);
+  border-inline-start-color: color-mix(
+    in srgb,
+    var(--color-primary) 35%,
+    var(--color-border)
+  );
+}
+
+.claim-resolution__status-icon {
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+  color: var(--color-primary);
+}
+
+.claim-resolution__status--resolved .claim-resolution__status-icon {
+  color: var(--color-success);
+}
+
+.claim-resolution__status-text {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  line-height: var(--line-height-base);
   color: var(--color-text);
 }
 
@@ -25,6 +70,8 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-sm);
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--color-border);
 }
 
 .claim-resolution__dialog {

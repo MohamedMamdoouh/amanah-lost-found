@@ -26,28 +26,74 @@
             [title]="claim.reportTitle"
             [reportType]="claim.reportType"
             [subtitle]="claim.reporterDisplayName"
+            subtitleIcon="person"
             [date]="(claim.submittedAt | appDate) ?? ''"
             [badgeLabel]="domainLabels.claimStatus(claim.status)"
             [badgeVariant]="domainLabels.claimBadgeVariant(claim.status)"
             [routerLink]="reportLink(claim)"
-            [actionLabel]="'claims.mine.view_report' | translate"
-          />
+            [splitLink]="canWithdraw(claim)"
+            [actionLabel]="
+              canWithdraw(claim)
+                ? null
+                : ('claims.mine.view_report' | translate)
+            "
+          >
+            @if (canWithdraw(claim)) {
+              <div listingCardActions class="my-claims-card__footer">
+                <p class="my-claims-card__footer-note">
+                  {{ "claims.mine.pending_note" | translate }}
+                </p>
+                <div class="my-claims-card__footer-actions">
+                  <app-button
+                    variant="outline"
+                    size="sm"
+                    [routerLink]="reportLink(claim)"
+                  >
+                    {{ "claims.mine.view_report" | translate }}
+                  </app-button>
+                  <app-button
+                    variant="outline"
+                    size="sm"
+                    [loading]="withdrawingId() === claim.id"
+                    [disabled]="withdrawingId() !== null"
+                    (clicked)="onWithdrawClick($event, claim)"
+                  >
+                    {{ "claims.mine.withdraw" | translate }}
+                  </app-button>
+                </div>
+              </div>
+            }
+          </app-listing-card>
           @if (claim.decisionReason) {
             <p class="my-claims__reason">{{ claim.decisionReason }}</p>
-          }
-          @if (canWithdraw(claim)) {
-            <app-button
-              variant="outline"
-              size="sm"
-              [loading]="withdrawingId() === claim.id"
-              [disabled]="withdrawingId() !== null"
-              (clicked)="withdraw(claim)"
-            >
-              {{ "claims.mine.withdraw" | translate }}
-            </app-button>
           }
         </li>
       }
     </ul>
+  }
+
+  @if (confirmWithdrawId()) {
+    <app-confirm-dialog
+      titleId="withdraw-claim-title"
+      [title]="'claims.mine.withdraw_title' | translate"
+      [intro]="'claims.mine.withdraw_intro' | translate"
+      [cancelLabel]="'claims.mine.withdraw_cancel' | translate"
+      [confirmLabel]="'claims.mine.withdraw_confirm' | translate"
+      confirmVariant="outline"
+      [loading]="withdrawingId() === confirmWithdrawId()"
+      (cancelled)="closeWithdrawConfirm()"
+      (confirmed)="confirmWithdraw()"
+    />
+  }
+
+  @if (actionFeedback(); as feedback) {
+    <app-action-feedback-dialog
+      titleId="my-claims-action-feedback-title"
+      [title]="feedback.title"
+      [message]="feedback.message"
+      [closeLabel]="'common.dialog.close_now' | translate"
+      [countdownLabel]="'common.dialog.auto_close' | translate"
+      (closed)="closeActionFeedback()"
+    />
   }
 </section>

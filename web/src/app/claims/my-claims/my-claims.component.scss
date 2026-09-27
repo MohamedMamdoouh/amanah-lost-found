@@ -9,10 +9,55 @@
 .my-claims__item {
   display: grid;
   gap: var(--space-sm);
+  width: 100%;
+}
+
+.my-claims__item app-listing-card {
+  width: 100%;
 }
 
 .my-claims__reason {
   margin: 0;
   color: var(--color-text-muted);
   font-size: 0.875rem;
+}
+
+.my-claims-card__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  width: 100%;
+}
+
+.my-claims-card__footer-note {
+  margin: 0;
+  flex: 1 1 9rem;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  line-height: var(--line-height-base);
+  color: var(--color-text-muted);
+}
+
+.my-claims-card__footer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin-inline-start: auto;
+}
+
+@media (max-width: 480px) {
+  .my-claims-card__footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .my-claims-card__footer-actions {
+    margin-inline-start: 0;
+  }
+
+  .my-claims-card__footer-actions app-button {
+    flex: 1 1 calc(50% - var(--space-sm) / 2);
+  }
 }
