@@ -1,0 +1,204 @@
+<article class="info-page page-container">
+  <header class="info-page__masthead">
+    <h1>{{ "pages.guide.title" | translate }}</h1>
+    <p class="info-page__lead">{{ "pages.guide.lead" | translate }}</p>
+  </header>
+
+  <nav
+    class="guide-toc"
+    [attr.aria-label]="'pages.guide.toc.label' | translate"
+  >
+    <p class="guide-toc__title">{{ "pages.guide.toc.label" | translate }}</p>
+    <ol class="guide-toc__list">
+      <li>
+        <a href="#section-start">{{ "pages.guide.start.title" | translate }}</a>
+      </li>
+      <li>
+        <a href="#section-browse">{{
+          "pages.guide.browse.title" | translate
+        }}</a>
+      </li>
+      <li>
+        <a href="#section-lost">{{ "pages.guide.lost.title" | translate }}</a>
+      </li>
+      <li>
+        <a href="#section-found">{{ "pages.guide.found.title" | translate }}</a>
+      </li>
+      <li>
+        <a href="#section-after-submit">{{
+          "pages.guide.after_submit.title" | translate
+        }}</a>
+      </li>
+      <li>
+        <a href="#section-claim">{{ "pages.guide.claim.title" | translate }}</a>
+      </li>
+      <li>
+        <a href="#section-reporter">{{
+          "pages.guide.reporter.title" | translate
+        }}</a>
+      </li>
+      <li>
+        <a href="#section-chat">{{ "pages.guide.chat.title" | translate }}</a>
+      </li>
+      <li>
+        <a href="#section-finish">{{
+          "pages.guide.finish.title" | translate
+        }}</a>
+      </li>
+      <li>
+        <a href="#section-nav">{{ "pages.guide.nav.title" | translate }}</a>
+      </li>
+    </ol>
+  </nav>
+
+  <div class="info-page__sections">
+    <section id="section-start" class="info-card info-card--highlight">
+      <div class="info-card__icon" aria-hidden="true">
+        <app-icon name="check" size="lg" />
+      </div>
+      <h2>{{ "pages.guide.start.title" | translate }}</h2>
+      <p>{{ "pages.guide.start.body" | translate }}</p>
+      <ul class="info-card__list">
+        <li>{{ "pages.guide.start.item_browse" | translate }}</li>
+        <li>{{ "pages.guide.start.item_login" | translate }}</li>
+        <li>{{ "pages.guide.start.item_terms" | translate }}</li>
+      </ul>
+    </section>
+
+    <section id="section-browse" class="info-card">
+      <div class="info-card__icon" aria-hidden="true">
+        <app-icon name="search" size="lg" />
+      </div>
+      <h2>{{ "pages.guide.browse.title" | translate }}</h2>
+      <p>{{ "pages.guide.browse.body" | translate }}</p>
+      <ul class="info-card__list">
+        <li>{{ "pages.guide.browse.item_filters" | translate }}</li>
+        <li>{{ "pages.guide.browse.item_detail" | translate }}</li>
+        <li>{{ "pages.guide.browse.item_claim_progress" | translate }}</li>
+      </ul>
+    </section>
+
+    <section id="section-lost" class="info-card">
+      <div class="info-card__icon" aria-hidden="true">
+        <app-icon name="lost" size="lg" />
+      </div>
+      <h2>{{ "pages.guide.lost.title" | translate }}</h2>
+      <p>{{ "pages.guide.lost.body" | translate }}</p>
+      <ul class="info-card__list">
+        <li>{{ "pages.guide.lost.item_fields" | translate }}</li>
+        <li>{{ "pages.guide.lost.item_photos" | translate }}</li>
+        <li>{{ "pages.guide.lost.item_contact" | translate }}</li>
+        <li>{{ "pages.guide.lost.item_pending" | translate }}</li>
+      </ul>
+    </section>
+
+    <section id="section-found" class="info-card">
+      <div class="info-card__icon" aria-hidden="true">
+        <app-icon name="found" size="lg" />
+      </div>
+      <h2>{{ "pages.guide.found.title" | translate }}</h2>
+      <p>{{ "pages.guide.found.body" | translate }}</p>
+      <ul class="info-card__list">
+        <li>{{ "pages.guide.found.item_held" | translate }}</li>
+        <li>{{ "pages.guide.found.item_same" | translate }}</li>
+      </ul>
+    </section>
+
+    <section id="section-after-submit" class="info-card">
+      <div class="info-card__icon" aria-hidden="true">
+        <app-icon name="shield" size="lg" />
+      </div>
+      <h2>{{ "pages.guide.after_submit.title" | translate }}</h2>
+      <p>{{ "pages.guide.after_submit.body" | translate }}</p>
+      <ul class="info-card__list">
+        <li>{{ "pages.guide.after_submit.item_review" | translate }}</li>
+        <li>{{ "pages.guide.after_submit.item_reject" | translate }}</li>
+        <li>{{ "pages.guide.after_submit.item_limits" | translate }}</li>
+        <li>{{ "pages.guide.after_submit.item_withdraw" | translate }}</li>
+      </ul>
+    </section>
+
+    <section id="section-claim" class="info-card">
+      <div class="info-card__icon" aria-hidden="true">
+        <app-icon name="check" size="lg" />
+      </div>
+      <h2>{{ "pages.guide.claim.title" | translate }}</h2>
+      <p>{{ "pages.guide.claim.body" | translate }}</p>
+      <ul class="info-card__list">
+        <li>{{ "pages.guide.claim.item_when" | translate }}</li>
+        <li>{{ "pages.guide.claim.item_answer" | translate }}</li>
+        <li>{{ "pages.guide.claim.item_mine" | translate }}</li>
+      </ul>
+    </section>
+
+    <section id="section-reporter" class="info-card">
+      <div class="info-card__icon" aria-hidden="true">
+        <app-icon name="lost" size="lg" />
+      </div>
+      <h2>{{ "pages.guide.reporter.title" | translate }}</h2>
+      <p>{{ "pages.guide.reporter.body" | translate }}</p>
+      <ul class="info-card__list">
+        <li>{{ "pages.guide.reporter.item_inbox" | translate }}</li>
+        <li>{{ "pages.guide.reporter.item_decide" | translate }}</li>
+        <li>{{ "pages.guide.reporter.item_one" | translate }}</li>
+      </ul>
+    </section>
+
+    <section id="section-chat" class="info-card">
+      <div class="info-card__icon" aria-hidden="true">
+        <app-icon name="chat" size="lg" />
+      </div>
+      <h2>{{ "pages.guide.chat.title" | translate }}</h2>
+      <p>{{ "pages.guide.chat.body" | translate }}</p>
+      <ul class="info-card__list">
+        <li>{{ "pages.guide.chat.item_thread" | translate }}</li>
+        <li>{{ "pages.guide.chat.item_safety" | translate }}</li>
+      </ul>
+    </section>
+
+    <section id="section-finish" class="info-card">
+      <h2>{{ "pages.guide.finish.title" | translate }}</h2>
+      <p>{{ "pages.guide.finish.body" | translate }}</p>
+      <ul class="info-card__list">
+        <li>{{ "pages.guide.finish.item_confirm" | translate }}</li>
+        <li>{{ "pages.guide.finish.item_cancel" | translate }}</li>
+      </ul>
+    </section>
+
+    <section id="section-nav" class="info-card">
+      <h2>{{ "pages.guide.nav.title" | translate }}</h2>
+      <p>{{ "pages.guide.nav.body" | translate }}</p>
+      <ul class="info-card__list">
+        <li>{{ "pages.guide.nav.item_reports" | translate }}</li>
+        <li>{{ "pages.guide.nav.item_incoming" | translate }}</li>
+        <li>{{ "pages.guide.nav.item_claims" | translate }}</li>
+        <li>{{ "pages.guide.nav.item_chats" | translate }}</li>
+        <li>{{ "pages.guide.nav.item_settings" | translate }}</li>
+      </ul>
+    </section>
+  </div>
+
+  <div class="info-page__actions">
+    <app-button variant="secondary" [routerLink]="'/browse'">
+      <app-icon name="search" size="sm" />
+      {{ "home.cta_browse" | translate }}
+    </app-button>
+    @if (!auth.isAdmin()) {
+      <app-button variant="primary" [routerLink]="'/report/lost'">
+        <app-icon name="lost" size="sm" />
+        {{ "home.cta_report_lost" | translate }}
+      </app-button>
+      <app-button variant="info" [routerLink]="'/report/found'">
+        <app-icon name="found" size="sm" />
+        {{ "home.cta_report_found" | translate }}
+      </app-button>
+    }
+  </div>
+
+  <aside class="info-page__cta">
+    <p>{{ "pages.guide.safety_cta.body" | translate }}</p>
+    <app-button variant="primary" [routerLink]="'/safety'">
+      {{ "home.safety_card_action" | translate }}
+    </app-button>
+  </aside>
+</article>

@@ -1,17 +1,24 @@
 <footer class="footer">
   <div class="footer__inner page-container--wide">
-    <a routerLink="/" class="footer__brand" [attr.aria-label]="'nav.home' | translate">
+    <a
+      routerLink="/"
+      class="footer__brand"
+      [attr.aria-label]="'nav.home' | translate"
+    >
       <span class="footer__mark" aria-hidden="true">
         <app-logo-mark [size]="32" variant="on-dark" />
       </span>
-      <span class="footer__name">{{ 'app.name' | translate }}</span>
+      <span class="footer__name">{{ "app.name" | translate }}</span>
     </a>
 
     <nav class="footer__nav" [attr.aria-label]="'nav.main' | translate">
-      <a routerLink="/safety">{{ 'footer.safety' | translate }}</a>
-      <a routerLink="/support">{{ 'footer.support' | translate }}</a>
-      <a routerLink="/terms">{{ 'footer.terms' | translate }}</a>
-      <a routerLink="/privacy">{{ 'footer.privacy' | translate }}</a>
+      <a routerLink="/guide">{{ "footer.guide" | translate }}</a>
+      <a routerLink="/safety">{{ "footer.safety" | translate }}</a>
+      @if (!auth.isAdmin()) {
+        <a routerLink="/support">{{ "footer.support" | translate }}</a>
+      }
+      <a routerLink="/terms">{{ "footer.terms" | translate }}</a>
+      <a routerLink="/privacy">{{ "footer.privacy" | translate }}</a>
     </nav>
   </div>
 </footer>

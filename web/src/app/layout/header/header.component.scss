@@ -178,6 +178,12 @@
   background: var(--color-accent-soft);
 }
 
+.header__user-link--with-badge,
+.header__drawer-link--with-badge {
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
 .header__bell {
   position: relative;
   display: inline-flex;

@@ -25,12 +25,14 @@ import { AppShellComponent } from './layout/app-shell/app-shell.component';
 import { NotificationsComponent } from './notifications/notifications.component';
 import { NotFoundComponent } from './pages/not-found/not-found.component';
 import { PrivacyComponent } from './pages/privacy/privacy.component';
+import { GuideComponent } from './pages/guide/guide.component';
 import { SafetyComponent } from './pages/safety/safety.component';
 import { SupportComponent } from './pages/support/support.component';
 import { TermsComponent } from './pages/terms/terms.component';
 import { UnavailableComponent } from './pages/unavailable/unavailable.component';
 import { ChatThreadComponent } from './chats/chat-thread/chat-thread.component';
 import { MyChatsComponent } from './chats/my-chats/my-chats.component';
+import { IncomingClaimsComponent } from './claims/incoming-claims/incoming-claims.component';
 import { MyClaimsComponent } from './claims/my-claims/my-claims.component';
 import { MyReportsComponent } from './reports/my-reports/my-reports.component';
 import { ReportDetailComponent } from './reports/report-detail/report-detail.component';
@@ -73,6 +75,11 @@ export const routes: Routes = [
         component: ReportFormComponent,
         canActivate: [authGuard, nonAdminGuard],
         data: { type: 'found' },
+      },
+      {
+        path: 'my/incoming-claims',
+        component: IncomingClaimsComponent,
+        canActivate: [authGuard, nonAdminGuard],
       },
       {
         path: 'my/claims',
@@ -127,6 +134,7 @@ export const routes: Routes = [
       },
       { path: 'terms', component: TermsComponent },
       { path: 'privacy', component: PrivacyComponent },
+      { path: 'guide', component: GuideComponent },
       { path: 'safety', component: SafetyComponent },
       {
         path: 'support',
