@@ -58,6 +58,52 @@ public static class ErrorCodes
     public const string FieldReplyEmailInvalid = "field.reply_email.invalid";
     public const string FieldSupportMessageRequired = "field.support_message.required";
     public const string FieldSupportMessageInvalid = "field.support_message.invalid";
+    public const string FieldSignInChannelRequired = "field.sign_in_channel.required";
+    public const string FieldSignInChannelInvalid = "field.sign_in_channel.invalid";
+    public const string FieldEmailRequired = "field.email.required";
+    public const string FieldSubmittedAnswerTooShort = "field.submitted_answer.too_short";
+    public const string FieldSubmittedAnswerTooLong = "field.submitted_answer.too_long";
+    public const string FieldPhotoMaxCount = "field.photo.max_count";
+    public const string FieldPhotoEmpty = "field.photo.empty";
+    public const string FieldPhotosMaxCount = "field.photos.max_count";
+    public const string FieldClaimMultipartRequired = "field.claim.multipart_required";
+    public const string FieldClaimDataRequired = "field.claim.data_required";
+    public const string FieldClaimDataInvalid = "field.claim.data_invalid";
+
+    public const string FieldReportTypeRequired = "field.report.type.required";
+    public const string FieldReportTypeInvalid = "field.report.type.invalid";
+    public const string FieldReportCategoryRequired = "field.report.category.required";
+    public const string FieldReportGovernorateRequired = "field.report.governorate.required";
+    public const string FieldReportTitleRequired = "field.report.title.required";
+    public const string FieldReportTitleTooShort = "field.report.title.too_short";
+    public const string FieldReportTitleTooLong = "field.report.title.too_long";
+    public const string FieldReportDescriptionRequired = "field.report.description.required";
+    public const string FieldReportDescriptionTooShort = "field.report.description.too_short";
+    public const string FieldReportDescriptionTooLong = "field.report.description.too_long";
+    public const string FieldReportAreaTooLong = "field.report.area_text.too_long";
+    public const string FieldReportDateFuture = "field.report.date.future";
+    public const string FieldReportDateTooOld = "field.report.date.too_old";
+    public const string FieldReportRewardFoundOnly = "field.report.reward.found_only";
+    public const string FieldReportRewardRequired = "field.report.reward.required";
+    public const string FieldReportRewardRange = "field.report.reward.range";
+    public const string FieldReportRewardEmpty = "field.report.reward.empty";
+    public const string FieldReportHeldLocationLostOnly = "field.report.held_location.lost_only";
+    public const string FieldReportHeldLocationRequired = "field.report.held_location.required";
+    public const string FieldReportHeldLocationTooLong = "field.report.held_location.too_long";
+    public const string FieldCategoryUnknown = "field.category.unknown";
+    public const string FieldCategoryRequired = "field.category.required";
+    public const string FieldCategoryMinLength = "field.category.min_length";
+    public const string FieldCategoryMaxLength = "field.category.max_length";
+    public const string FieldCategoryLettersAndSpaces = "field.category.letters_and_spaces";
+
+    public const string ClaimContactInfo = "claim.contact_info";
+
+    public const string FieldAbuseReasonRequired = "field.abuse.reason.required";
+    public const string FieldAbuseNoteTooLong = "field.abuse.note.too_long";
+    public const string FieldReportWithdrawReasonInvalid = "field.report.withdraw_reason.invalid";
+    public const string FieldAdminRejectionReasonRequired = "field.admin.rejection_reason.required";
+    public const string FieldAdminRejectionReasonInvalid = "field.admin.rejection_reason.invalid";
+    public const string FieldAdminRejectionNoteTooLong = "field.admin.rejection_note.too_long";
 
     public const string ReportDailyQuota = "report.daily_quota";
     public const string ReportOpenCap = "report.open_cap";
