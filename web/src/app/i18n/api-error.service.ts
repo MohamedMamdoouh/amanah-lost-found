@@ -13,6 +13,8 @@ export interface HttpErrorMessageOptions {
   fallbackKey?: string;
 }
 
+const CODE_LIKE = /^[a-z][\w.]+$/i;
+
 @Injectable({ providedIn: 'root' })
 export class ApiErrorService {
   private readonly translate = inject(TranslateService);
@@ -22,11 +24,20 @@ export class ApiErrorService {
       return this.bannedMessage(error.message);
     }
 
-    return this.translateCode(error.code, error.message);
+    return this.translateCode(error.code);
   }
 
   fieldErrors(error: ApiErrorBody): Record<string, string[]> {
-    return error.errors ?? {};
+    const raw = error.errors ?? {};
+    const translated: Record<string, string[]> = {};
+
+    for (const [fieldKey, messages] of Object.entries(raw)) {
+      translated[fieldKey] = messages.map((msg) =>
+        this.translateFieldMessage(msg, fieldKey),
+      );
+    }
+
+    return translated;
   }
 
   extractBody(error: unknown): ApiErrorBody | null {
@@ -36,6 +47,23 @@ export class ApiErrorService {
 
     const body = error.error as ApiErrorBody | null;
     return body?.code ? body : null;
+  }
+
+  messageForCode(code: string): string {
+    return this.translateCode(code);
+  }
+
+  translateFieldMessage(raw: string, _fieldKey?: string): string {
+    const trimmed = raw.trim();
+    if (!trimmed) {
+      return this.translate.instant('error.validation.failed');
+    }
+
+    if (CODE_LIKE.test(trimmed)) {
+      return this.translateCode(trimmed.toLowerCase());
+    }
+
+    return this.translate.instant('error.validation.failed');
   }
 
   messageFromHttpError(
@@ -80,7 +108,7 @@ export class ApiErrorService {
 
     for (const candidate of candidates) {
       const code = candidate.replace(/\.$/, '');
-      if (/^[a-z][\w.]+$/i.test(code)) {
+      if (CODE_LIKE.test(code)) {
         return code.toLowerCase();
       }
     }
@@ -89,7 +117,6 @@ export class ApiErrorService {
   }
 
   private bannedMessage(apiMessage: string): string {
-    // Server copies the recorded ban reason after this English prefix.
     const reasonPrefix = 'Your account has been banned: ';
     if (apiMessage.startsWith(reasonPrefix)) {
       const reason = apiMessage.slice(reasonPrefix.length).trim();
@@ -103,9 +130,18 @@ export class ApiErrorService {
     return this.translate.instant('error.auth.banned');
   }
 
-  private translateCode(code: string, fallback?: string): string {
-    const key = `error.${code}`;
+  private translateCode(code: string): string {
+    const normalized = code.toLowerCase();
+    const key = `error.${normalized}`;
     const translated = this.translate.instant(key);
-    return translated === key ? (fallback ?? code) : translated;
+    if (translated !== key) {
+      return translated;
+    }
+
+    if (normalized === 'validation.failed') {
+      return this.translate.instant('error.validation.failed');
+    }
+
+    return this.translate.instant('error.internal.error');
   }
 }
