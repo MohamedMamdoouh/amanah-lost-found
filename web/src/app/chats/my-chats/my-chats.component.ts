@@ -53,13 +53,6 @@ export class MyChatsComponent implements OnInit {
     return thread.lastMessageAt ?? thread.createdAt;
   }
 
-  threadSubtitle(thread: ChatThreadSummary): string {
-    if (thread.lastMessagePreview) {
-      return thread.lastMessagePreview;
-    }
-    return this.translate.instant('chats.list.no_messages');
-  }
-
   statusLabel(thread: ChatThreadSummary): string {
     return thread.readOnlyAt
       ? this.translate.instant('chats.status.read_only')

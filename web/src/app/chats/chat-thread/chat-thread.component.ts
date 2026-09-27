@@ -23,6 +23,10 @@ import { FlagListingDialogComponent } from '../../abuse/flag-listing-dialog.comp
 import { AuthService } from '../../auth/auth.service';
 import { ApiErrorService } from '../../i18n/api-error.service';
 import { ReportService } from '../../reports/report.service';
+import {
+  ActionFeedbackDialogComponent,
+  ActionFeedbackState,
+} from '../../shared/ui/action-feedback-dialog/action-feedback-dialog.component';
 import { AlertComponent } from '../../shared/ui/alert/alert.component';
 import { ButtonComponent } from '../../shared/ui/button/button.component';
 import { IconComponent } from '../../shared/ui/icon/icon.component';
@@ -51,6 +55,7 @@ const ALLOWED_ATTACHMENT_TYPES = new Set([
   standalone: true,
   imports: [
     AppDatePipe,
+    ActionFeedbackDialogComponent,
     AlertComponent,
     ButtonComponent,
     FlagListingDialogComponent,
@@ -66,6 +71,16 @@ const ALLOWED_ATTACHMENT_TYPES = new Set([
   styleUrl: './chat-thread.component.scss',
 })
 export class ChatThreadComponent implements OnInit, AfterViewChecked {
+  private static readonly dayLabelFormat = new Intl.DateTimeFormat('ar-EG', {
+    numberingSystem: 'latn',
+    dateStyle: 'medium',
+  });
+
+  private static readonly timeLabelFormat = new Intl.DateTimeFormat('ar-EG', {
+    numberingSystem: 'latn',
+    timeStyle: 'short',
+  });
+
   private readonly route = inject(ActivatedRoute);
   private readonly chatService = inject(ChatService);
   private readonly chatHub = inject(ChatHubService);
@@ -94,7 +109,7 @@ export class ChatThreadComponent implements OnInit, AfterViewChecked {
   );
   readonly openFlag = signal<FlagListingResponse | null>(null);
   readonly flagDialogOpen = signal(false);
-  readonly flagSuccessMessage = signal<string | null>(null);
+  readonly actionFeedback = signal<ActionFeedbackState | null>(null);
   readonly reportControlVisible = signal(false);
 
   private threadId = '';
@@ -169,6 +184,54 @@ export class ChatThreadComponent implements OnInit, AfterViewChecked {
     return message.senderId === this.auth.currentUser()?.id;
   }
 
+  showsDayDivider(index: number): boolean {
+    const list = this.messages();
+    if (list.length === 0) {
+      return false;
+    }
+
+    if (index === 0) {
+      return true;
+    }
+
+    return (
+      this.messageDayKey(list[index - 1].sentAt) !==
+      this.messageDayKey(list[index].sentAt)
+    );
+  }
+
+  dayDividerLabel(sentAt: string): string {
+    return ChatThreadComponent.dayLabelFormat.format(new Date(sentAt));
+  }
+
+  messageTime(sentAt: string): string {
+    return ChatThreadComponent.timeLabelFormat.format(new Date(sentAt));
+  }
+
+  showsSender(index: number): boolean {
+    const list = this.messages();
+    const message = list[index];
+    if (this.isOwnMessage(message)) {
+      return false;
+    }
+
+    if (index === 0) {
+      return true;
+    }
+
+    return list[index - 1].senderId !== message.senderId;
+  }
+
+  onComposerEnter(event: Event): void {
+    const keyboard = event as KeyboardEvent;
+    if (keyboard.shiftKey) {
+      return;
+    }
+
+    keyboard.preventDefault();
+    void this.sendMessage();
+  }
+
   reportLink(): string[] {
     const thread = this.thread();
     if (!thread) {
@@ -188,10 +251,6 @@ export class ChatThreadComponent implements OnInit, AfterViewChecked {
       return;
     }
 
-    if (!this.openFlag()) {
-      this.flagSuccessMessage.set(null);
-    }
-
     this.flagDialogOpen.set(true);
   }
 
@@ -202,9 +261,16 @@ export class ChatThreadComponent implements OnInit, AfterViewChecked {
   onFlagSubmitted(flag: FlagListingResponse): void {
     this.openFlag.set(flag);
     this.flagDialogOpen.set(false);
-    this.flagSuccessMessage.set(
-      this.translate.instant('abuse.flag.submit_success'),
-    );
+    this.actionFeedback.set({
+      title: this.translate.instant('common.dialog.done_title'),
+      message: this.translate.instant('abuse.flag.submit_success'),
+    });
+  }
+
+  closeActionFeedback(): void {
+    const feedback = this.actionFeedback();
+    this.actionFeedback.set(null);
+    feedback?.onClosed?.();
   }
 
   canSend(): boolean {
@@ -431,7 +497,7 @@ export class ChatThreadComponent implements OnInit, AfterViewChecked {
   private resetFlagState(): void {
     this.openFlag.set(null);
     this.flagDialogOpen.set(false);
-    this.flagSuccessMessage.set(null);
+    this.actionFeedback.set(null);
     this.reportControlVisible.set(false);
   }
 
@@ -541,6 +607,10 @@ export class ChatThreadComponent implements OnInit, AfterViewChecked {
       ...current,
       [attachmentId]: patch,
     }));
+  }
+
+  private messageDayKey(sentAt: string): string {
+    return sentAt.slice(0, 10);
   }
 
   private validateAttachmentFile(file: File): string | null {

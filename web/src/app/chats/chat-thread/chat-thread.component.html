@@ -1,4 +1,8 @@
-<section class="chat-thread page-container" aria-labelledby="chat-thread-title">
+<section
+  class="chat-thread page-container"
+  [class.chat-thread--ready]="!!thread()"
+  aria-labelledby="chat-thread-title"
+>
   @if (loading()) {
     <app-loading-indicator [label]="'chats.thread.loading' | translate" />
   } @else if (error()) {
@@ -9,15 +13,28 @@
     />
     <app-alert variant="error">{{ error() }}</app-alert>
   } @else if (thread()) {
-    <app-page-header
-      [title]="thread()!.reportTitle"
-      [intro]="
-        'chats.thread.with_counterparty'
-          | translate: { name: thread()!.counterpartyDisplayName }
-      "
-      [backLink]="'/my/chats'"
-      [backLabel]="'chats.thread.back' | translate"
-    >
+    <header class="chat-thread__header">
+      <a
+        class="chat-thread__back"
+        [routerLink]="'/my/chats'"
+        [attr.aria-label]="'chats.thread.back' | translate"
+      >
+        <app-icon name="chevron" size="md" />
+      </a>
+
+      <div class="chat-thread__header-main">
+        <h1 id="chat-thread-title" class="chat-thread__title">
+          {{ thread()!.reportTitle }}
+        </h1>
+        <p class="chat-thread__peer meta-text">
+          <app-icon name="person" size="sm" />
+          {{
+            "chats.thread.with_counterparty"
+              | translate: { name: thread()!.counterpartyDisplayName }
+          }}
+        </p>
+      </div>
+
       <div class="chat-thread__header-actions">
         <a class="chat-thread__report-link" [routerLink]="reportLink()">
           {{ "chats.thread.view_report" | translate }}
@@ -32,36 +49,14 @@
           </app-button>
         }
       </div>
-    </app-page-header>
+    </header>
 
-    @if (flagSuccessMessage(); as successMessage) {
-      <app-alert variant="success">{{ successMessage }}</app-alert>
-    }
+    <div class="chat-thread__frame">
+      <app-safety-banner [compact]="true" />
 
-    <app-safety-banner />
-
-    @if (isReadOnly()) {
-      <app-alert variant="info">
-        {{ "chats.thread.read_only_notice" | translate }}
-      </app-alert>
-    }
-
-    @if (sendError()) {
-      <app-alert variant="error">{{ sendError() }}</app-alert>
-    }
-
-    <div class="chat-thread__panel">
-      @if (hasOlderMessages()) {
-        <div class="chat-thread__load-more">
-          <app-button
-            variant="ghost"
-            size="sm"
-            [loading]="loadingOlder()"
-            [disabled]="loadingOlder()"
-            (clicked)="loadOlderMessages()"
-          >
-            {{ "chats.thread.load_older" | translate }}
-          </app-button>
+      @if (sendError()) {
+        <div class="chat-thread__toast" role="alert">
+          {{ sendError() }}
         </div>
       }
 
@@ -70,53 +65,82 @@
         role="log"
         [attr.aria-label]="'chats.thread.messages' | translate"
       >
+        @if (hasOlderMessages()) {
+          <div class="chat-thread__load-more">
+            <app-button
+              variant="ghost"
+              size="sm"
+              [loading]="loadingOlder()"
+              [disabled]="loadingOlder()"
+              (clicked)="loadOlderMessages()"
+            >
+              {{ "chats.thread.load_older" | translate }}
+            </app-button>
+          </div>
+        }
+
         @if (messages().length === 0) {
           <p class="chat-thread__empty">
             {{ "chats.thread.empty" | translate }}
           </p>
         } @else {
-          @for (message of messages(); track message.id) {
+          @for (message of messages(); track message.id; let i = $index) {
+            @if (showsDayDivider(i)) {
+              <div class="chat-thread__day" aria-hidden="true">
+                <span>{{ dayDividerLabel(message.sentAt) }}</span>
+              </div>
+            }
+
             <article
               class="chat-thread__message"
               [class.chat-thread__message--own]="isOwnMessage(message)"
             >
-              <header class="chat-thread__message-header">
+              @if (showsSender(i)) {
                 <span class="chat-thread__sender">{{
                   message.senderDisplayName
                 }}</span>
-                <time class="chat-thread__time" [dateTime]="message.sentAt">
-                  {{ message.sentAt | appDate }}
+              }
+
+              <div class="chat-thread__bubble">
+                @if (message.attachmentId) {
+                  <div class="chat-thread__attachment">
+                    @if (attachmentState(message.attachmentId)?.loading) {
+                      <span class="chat-thread__attachment-loading">
+                        {{ "chats.thread.attachment_loading" | translate }}
+                      </span>
+                    } @else if (attachmentState(message.attachmentId)?.url) {
+                      <a
+                        class="chat-thread__attachment-link"
+                        [href]="attachmentState(message.attachmentId)!.url!"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <img
+                          class="chat-thread__attachment-image"
+                          [src]="attachmentState(message.attachmentId)!.url!"
+                          [alt]="'chats.thread.attachment_alt' | translate"
+                          loading="lazy"
+                          (error)="
+                            onAttachmentImageError(message.attachmentId!)
+                          "
+                        />
+                      </a>
+                    }
+                  </div>
+                }
+
+                @if (message.body) {
+                  <p class="chat-thread__body">{{ message.body }}</p>
+                }
+
+                <time
+                  class="chat-thread__time"
+                  [dateTime]="message.sentAt"
+                  [attr.title]="message.sentAt | appDate"
+                >
+                  {{ messageTime(message.sentAt) }}
                 </time>
-              </header>
-
-              @if (message.attachmentId) {
-                <div class="chat-thread__attachment">
-                  @if (attachmentState(message.attachmentId)?.loading) {
-                    <span class="chat-thread__attachment-loading">
-                      {{ "chats.thread.attachment_loading" | translate }}
-                    </span>
-                  } @else if (attachmentState(message.attachmentId)?.url) {
-                    <a
-                      class="chat-thread__attachment-link"
-                      [href]="attachmentState(message.attachmentId)!.url!"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <img
-                        class="chat-thread__attachment-image"
-                        [src]="attachmentState(message.attachmentId)!.url!"
-                        [alt]="'chats.thread.attachment_alt' | translate"
-                        loading="lazy"
-                        (error)="onAttachmentImageError(message.attachmentId!)"
-                      />
-                    </a>
-                  }
-                </div>
-              }
-
-              @if (message.body) {
-                <p class="chat-thread__body">{{ message.body }}</p>
-              }
+              </div>
             </article>
           }
         }
@@ -128,80 +152,98 @@
         (ngSubmit)="sendMessage()"
         [attr.aria-disabled]="isReadOnly()"
       >
-        @if (pendingAttachment()) {
-          <div class="chat-thread__pending-attachment">
-            <img
-              class="chat-thread__pending-image"
-              [src]="pendingAttachment()!.previewUrl"
-              [alt]="pendingAttachment()!.fileName"
-            />
-            <div class="chat-thread__pending-meta">
-              <span class="chat-thread__pending-name">{{
-                pendingAttachment()!.fileName
-              }}</span>
-              <button
-                type="button"
-                class="chat-thread__pending-remove"
-                [disabled]="sending()"
-                (click)="clearPendingAttachment()"
-              >
-                {{ "chats.thread.remove_attachment" | translate }}
-              </button>
+        @if (isReadOnly()) {
+          <p class="chat-thread__readonly">
+            {{ "chats.thread.read_only_notice" | translate }}
+          </p>
+        } @else {
+          @if (pendingAttachment()) {
+            <div class="chat-thread__pending-attachment">
+              <img
+                class="chat-thread__pending-image"
+                [src]="pendingAttachment()!.previewUrl"
+                [alt]="pendingAttachment()!.fileName"
+              />
+              <div class="chat-thread__pending-meta">
+                <span class="chat-thread__pending-name">{{
+                  pendingAttachment()!.fileName
+                }}</span>
+                <button
+                  type="button"
+                  class="chat-thread__pending-remove"
+                  [disabled]="sending()"
+                  (click)="clearPendingAttachment()"
+                >
+                  {{ "chats.thread.remove_attachment" | translate }}
+                </button>
+              </div>
             </div>
+          }
+
+          <div class="chat-thread__composer-bar">
+            <input
+              #photoInput
+              type="file"
+              class="chat-thread__photo-input"
+              accept="image/jpeg,image/png,image/webp"
+              [disabled]="
+                sending() ||
+                uploadingAttachment() ||
+                pendingAttachment() != null
+              "
+              (change)="onPhotoSelected($event)"
+            />
+            <button
+              type="button"
+              class="chat-thread__composer-icon"
+              [attr.aria-label]="'chats.thread.attach_photo' | translate"
+              [disabled]="
+                sending() ||
+                uploadingAttachment() ||
+                pendingAttachment() != null
+              "
+              (click)="photoInput.click()"
+            >
+              @if (uploadingAttachment()) {
+                <span class="chat-thread__composer-spinner" aria-hidden="true"
+                  >…</span
+                >
+              } @else {
+                <app-icon name="camera" size="md" />
+              }
+            </button>
+
+            <label class="sr-only" for="chat-message-input">
+              {{ "chats.thread.input_label" | translate }}
+            </label>
+            <textarea
+              id="chat-message-input"
+              class="chat-thread__input"
+              rows="1"
+              [placeholder]="'chats.thread.input_placeholder' | translate"
+              [disabled]="sending() || uploadingAttachment()"
+              [ngModel]="draft()"
+              (ngModelChange)="draft.set($event)"
+              (keydown.enter)="onComposerEnter($event)"
+              name="messageBody"
+            ></textarea>
+
+            <button
+              type="submit"
+              class="chat-thread__send"
+              [attr.aria-label]="'chats.thread.send' | translate"
+              [disabled]="!canSend()"
+            >
+              @if (sending()) {
+                <span class="chat-thread__composer-spinner" aria-hidden="true"
+                  >…</span
+                >
+              } @else {
+                <app-icon name="send" size="md" />
+              }
+            </button>
           </div>
         }
-
-        <label class="sr-only" for="chat-message-input">
-          {{ "chats.thread.input_label" | translate }}
-        </label>
-        <textarea
-          id="chat-message-input"
-          class="form-textarea chat-thread__input"
-          rows="3"
-          [placeholder]="'chats.thread.input_placeholder' | translate"
-          [disabled]="isReadOnly() || sending() || uploadingAttachment()"
-          [ngModel]="draft()"
-          (ngModelChange)="draft.set($event)"
-          name="messageBody"
-        ></textarea>
-        <div class="chat-thread__composer-actions">
-          <input
-            #photoInput
-            type="file"
-            class="chat-thread__photo-input"
-            accept="image/jpeg,image/png,image/webp"
-            [disabled]="
-              isReadOnly() ||
-              sending() ||
-              uploadingAttachment() ||
-              pendingAttachment() != null
-            "
-            (change)="onPhotoSelected($event)"
-          />
-          <app-button
-            variant="ghost"
-            type="button"
-            [loading]="uploadingAttachment()"
-            [disabled]="
-              isReadOnly() ||
-              sending() ||
-              uploadingAttachment() ||
-              pendingAttachment() != null
-            "
-            (clicked)="photoInput.click()"
-          >
-            <app-icon name="camera" size="sm" />
-            <span>{{ "chats.thread.attach_photo" | translate }}</span>
-          </app-button>
-          <app-button
-            variant="primary"
-            type="submit"
-            [loading]="sending()"
-            [disabled]="!canSend()"
-          >
-            {{ "chats.thread.send" | translate }}
-          </app-button>
-        </div>
       </form>
     </div>
 
@@ -211,6 +253,17 @@
         [existingFlag]="openFlag()"
         (closed)="closeFlagDialog()"
         (submitted)="onFlagSubmitted($event)"
+      />
+    }
+
+    @if (actionFeedback(); as feedback) {
+      <app-action-feedback-dialog
+        titleId="chat-thread-action-feedback-title"
+        [title]="feedback.title"
+        [message]="feedback.message"
+        [closeLabel]="'common.dialog.close_now' | translate"
+        [countdownLabel]="'common.dialog.auto_close' | translate"
+        (closed)="closeActionFeedback()"
       />
     }
   }

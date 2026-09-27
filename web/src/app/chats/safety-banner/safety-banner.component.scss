@@ -43,3 +43,34 @@
 .safety-banner__link:hover {
   color: var(--color-primary-dark, var(--color-primary));
 }
+
+.safety-banner--compact {
+  align-items: flex-start;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  background: color-mix(
+    in srgb,
+    var(--color-warning-bg) 70%,
+    var(--color-surface)
+  );
+  border-block-end: 1px solid var(--color-border);
+  border-radius: 0;
+}
+
+.safety-banner--compact app-icon {
+  flex-shrink: 0;
+  margin-block-start: 0.1rem;
+  color: var(--color-warning);
+}
+
+.safety-banner__compact-text {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  line-height: 1.45;
+  color: var(--color-text-muted);
+}
+
+.safety-banner--compact .safety-banner__link {
+  font-size: inherit;
+  white-space: nowrap;
+}

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -11,4 +11,6 @@ import { IconComponent } from '../../shared/ui/icon/icon.component';
   templateUrl: './safety-banner.component.html',
   styleUrl: './safety-banner.component.scss',
 })
-export class SafetyBannerComponent {}
+export class SafetyBannerComponent {
+  readonly compact = input(false);
+}

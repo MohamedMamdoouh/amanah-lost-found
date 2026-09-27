@@ -22,15 +22,13 @@
             [title]="thread.reportTitle"
             [reportType]="thread.reportType"
             [subtitle]="thread.counterpartyDisplayName"
+            subtitleIcon="person"
             [date]="(threadDate(thread) | appDate) ?? ''"
             [badgeLabel]="statusLabel(thread)"
             [badgeVariant]="statusBadgeVariant(thread)"
             [routerLink]="threadLink(thread)"
             [actionLabel]="'chats.list.open' | translate"
           />
-          @if (thread.lastMessagePreview) {
-            <p class="my-chats__preview">{{ threadSubtitle(thread) }}</p>
-          }
         </li>
       }
     </ul>
