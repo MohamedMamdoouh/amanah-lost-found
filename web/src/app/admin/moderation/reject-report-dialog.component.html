@@ -1,0 +1,76 @@
+<div
+  class="app-dialog__overlay"
+  (click)="onBackdropClick()"
+  (keydown.escape)="onCancel()"
+>
+  <div
+    class="app-dialog app-dialog--scrollable"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="reject-report-dialog-title"
+    (click)="$event.stopPropagation()"
+  >
+    <header class="app-dialog__header">
+      <div class="app-dialog__icon app-dialog__icon--danger" aria-hidden="true">
+        <app-icon name="shield" size="md" />
+      </div>
+      <div class="app-dialog__heading">
+        <h2 id="reject-report-dialog-title" class="app-dialog__title">
+          {{ "admin.moderation.reject" | translate }}
+        </h2>
+        <p class="app-dialog__intro">
+          {{ "admin.moderation.reject_intro" | translate }}
+        </p>
+      </div>
+    </header>
+
+    @if (summaryError()) {
+      <app-alert variant="error">{{ summaryError() }}</app-alert>
+    }
+
+    <form
+      class="reject-report-dialog__form"
+      [formGroup]="form"
+      (ngSubmit)="onSubmit()"
+    >
+      <label class="form-field">
+        <span class="form-label">{{
+          "admin.moderation.reject_reason" | translate
+        }}</span>
+        <select class="form-select" formControlName="reasonCode">
+          <option value="" disabled>
+            {{ "admin.moderation.reject_reason" | translate }}
+          </option>
+          @for (code of rejectionReasons; track code) {
+            <option [value]="code">{{ reasonLabel(code) }}</option>
+          }
+        </select>
+      </label>
+      <label class="form-field">
+        <span class="form-label">{{
+          "admin.moderation.reject_note" | translate
+        }}</span>
+        <textarea class="form-textarea" formControlName="note" rows="3"></textarea>
+      </label>
+
+      <div class="app-dialog__actions">
+        <app-button
+          type="button"
+          variant="ghost"
+          [disabled]="rejecting()"
+          (clicked)="onCancel()"
+        >
+          {{ "reports.withdraw.cancel" | translate }}
+        </app-button>
+        <app-button
+          type="submit"
+          variant="danger"
+          [loading]="rejecting()"
+          [disabled]="rejecting() || form.invalid"
+        >
+          {{ "admin.moderation.reject_submit" | translate }}
+        </app-button>
+      </div>
+    </form>
+  </div>
+</div>

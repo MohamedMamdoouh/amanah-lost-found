@@ -2,7 +2,7 @@
   "rejection.unclear_photos": "الصور غير واضحة",
   "rejection.spam_or_scam": "بلاغ غير حقيقي أو فيه شبهة نصب",
   "rejection.duplicate_report": "بلاغ مكرر لنفس الشيء",
-  "rejection.insufficient_description": "الوصف غير كافٍ",
+  "rejection.insufficient_description": "الوصف غير كافي",
   "rejection.contact_info": "يتضمن وسائل تواصل شخصية",
   "rejection.prohibited_item": "شيء مخالف للقانون",
   "rejection.wrong_category": "اختيار فئة غير صحيحة",

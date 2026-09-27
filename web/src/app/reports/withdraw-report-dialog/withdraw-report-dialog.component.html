@@ -1,0 +1,68 @@
+<div
+  class="app-dialog__overlay"
+  (click)="onBackdropClick()"
+  (keydown.escape)="onCancel()"
+>
+  <div
+    class="app-dialog app-dialog--scrollable"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="withdraw-report-dialog-title"
+    (click)="$event.stopPropagation()"
+  >
+    <header class="app-dialog__header">
+      <div class="app-dialog__icon app-dialog__icon--danger" aria-hidden="true">
+        <app-icon name="clock" size="md" />
+      </div>
+      <div class="app-dialog__heading">
+        <h2 id="withdraw-report-dialog-title" class="app-dialog__title">
+          {{ "reports.withdraw.title" | translate }}
+        </h2>
+        <p class="app-dialog__intro">
+          {{ "reports.withdraw.intro" | translate }}
+        </p>
+      </div>
+    </header>
+
+    @if (summaryError()) {
+      <app-alert variant="error">{{ summaryError() }}</app-alert>
+    }
+
+    <form
+      class="withdraw-report-dialog__form"
+      [formGroup]="form"
+      (ngSubmit)="onSubmit()"
+    >
+      <fieldset class="withdraw-report-dialog__reasons">
+        <legend class="withdraw-report-dialog__reasons-legend">
+          {{ "reports.withdraw.reason_label" | translate }}
+        </legend>
+        @for (reason of withdrawalReasons; track reason) {
+          <label class="withdraw-report-dialog__reason">
+            <input type="radio" formControlName="reason" [value]="reason" />
+            <span>{{ reasonLabel(reason) }}</span>
+          </label>
+        }
+      </fieldset>
+
+      <div class="app-dialog__actions">
+        <app-button
+          type="button"
+          variant="ghost"
+          [disabled]="withdrawing()"
+          (clicked)="onCancel()"
+        >
+          {{ "reports.withdraw.cancel" | translate }}
+        </app-button>
+        <app-button
+          type="submit"
+          variant="danger"
+          [loading]="withdrawing()"
+          [disabled]="withdrawing() || form.invalid"
+        >
+          {{ "reports.withdraw.confirm" | translate }}
+        </app-button>
+      </div>
+    </form>
+  </div>
+</div>

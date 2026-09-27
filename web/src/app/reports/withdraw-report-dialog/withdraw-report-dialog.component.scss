@@ -1,0 +1,27 @@
+:host {
+  display: contents;
+}
+
+.withdraw-report-dialog__form {
+  display: grid;
+  gap: var(--space-md);
+}
+
+.withdraw-report-dialog__reasons {
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+.withdraw-report-dialog__reasons-legend {
+  font-weight: 700;
+  margin-bottom: var(--space-sm);
+}
+
+.withdraw-report-dialog__reason {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-xs);
+  cursor: pointer;
+}
