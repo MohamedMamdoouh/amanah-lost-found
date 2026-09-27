@@ -1,4 +1,12 @@
-import { Component, inject, input, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  inject,
+  input,
+  OnInit,
+  output,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -30,7 +38,7 @@ const MAX_LENGTH = 500;
   templateUrl: './claim-form.component.html',
   styleUrl: './claim-form.component.scss',
 })
-export class ClaimFormComponent {
+export class ClaimFormComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly claimService = inject(ClaimService);
   private readonly apiErrors = inject(ApiErrorService);
@@ -40,13 +48,16 @@ export class ClaimFormComponent {
   readonly reportId = input.required<string>();
   readonly reportType = input.required<ReportType>();
 
+  readonly cancelled = output<void>();
+
   readonly submitting = signal(false);
   readonly submitted = signal(false);
   readonly submittedId = signal<string | null>(null);
   readonly summaryError = signal<string | null>(null);
   readonly fieldErrors = signal<Record<string, string[]>>({});
   readonly selectedPhoto = signal<File | null>(null);
-  readonly showPhotoUpload = signal(false);
+  readonly submitBlocked = signal(false);
+  readonly loadingEligibility = signal(true);
 
   readonly form = this.fb.nonNullable.group({
     submittedAnswer: [
@@ -58,6 +69,10 @@ export class ClaimFormComponent {
       ],
     ],
   });
+
+  ngOnInit(): void {
+    void this.loadSubmitEligibility();
+  }
 
   isFound(): boolean {
     return this.reportType() === 'found';
@@ -77,8 +92,12 @@ export class ClaimFormComponent {
     this.selectedPhoto.set(photos[0] ?? null);
   }
 
-  revealPhotoUpload(): void {
-    this.showPhotoUpload.set(true);
+  onCancel(): void {
+    if (this.submitting()) {
+      return;
+    }
+
+    this.cancelled.emit();
   }
 
   fieldError(name: string): string | null {
@@ -112,11 +131,13 @@ export class ClaimFormComponent {
   }
 
   async submit(): Promise<void> {
-    if (this.form.invalid || this.submitting()) {
+    if (this.submitBlocked() || this.form.invalid || this.submitting()) {
       this.form.markAllAsTouched();
-      this.summaryError.set(
-        this.translate.instant('claims.form.validation_summary'),
-      );
+      if (!this.submitBlocked()) {
+        this.summaryError.set(
+          this.translate.instant('claims.form.validation_summary'),
+        );
+      }
       return;
     }
 
@@ -141,7 +162,6 @@ export class ClaimFormComponent {
       this.fieldErrors.set(errors);
 
       if (errors['photo']) {
-        this.showPhotoUpload.set(true);
         this.selectedPhoto.set(null);
         this.photoUpload()?.clear();
       }
@@ -150,8 +170,33 @@ export class ClaimFormComponent {
     }
   }
 
-  private clearErrors(): void {
+  private async loadSubmitEligibility(): Promise<void> {
+    this.loadingEligibility.set(true);
+    this.submitBlocked.set(false);
     this.summaryError.set(null);
+
+    try {
+      const eligibility = await firstValueFrom(
+        this.claimService.getSubmitEligibility(this.reportId()),
+      );
+
+      if (!eligibility.canSubmit && eligibility.blockCode) {
+        this.submitBlocked.set(true);
+        this.summaryError.set(
+          this.apiErrors.messageForCode(eligibility.blockCode),
+        );
+      }
+    } catch {
+      // Leave form usable; submit will surface server errors.
+    } finally {
+      this.loadingEligibility.set(false);
+    }
+  }
+
+  private clearErrors(): void {
+    if (!this.submitBlocked()) {
+      this.summaryError.set(null);
+    }
     this.fieldErrors.set({});
   }
 }

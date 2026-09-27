@@ -137,6 +137,26 @@ public sealed class ReportsController(
         return result.ToActionResult();
     }
 
+    [HttpGet("{id:guid}/claims/submit-eligibility")]
+    [EndpointName(nameof(GetClaimSubmitEligibility))]
+    [EndpointSummary("Check whether the authenticated user can submit a claim on this report.")]
+    [ProducesResponseType(typeof(ClaimSubmitEligibilityResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiError), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ApiError), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetClaimSubmitEligibility(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        User.TryGetUserId(out var userId);
+
+        var result = await claimService.GetSubmitEligibilityAsync(
+            id,
+            userId,
+            User.GetUserRole(),
+            cancellationToken);
+        return result.ToActionResult();
+    }
+
     [HttpGet("{id:guid}/claims")]
     [EndpointName(nameof(GetReportClaims))]
     [EndpointSummary("List claims on the authenticated reporter's report.")]

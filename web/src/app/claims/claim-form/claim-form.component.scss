@@ -11,3 +11,10 @@
 .claim-form__answer {
   min-height: 4.5rem;
 }
+
+.claim-form__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+}

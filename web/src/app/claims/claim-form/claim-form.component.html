@@ -33,38 +33,41 @@
       }
     </label>
 
-    @if (showPhotoUpload()) {
-      <div class="form-field">
-        <span class="form-label">{{ "claims.form.photo_title" | translate }}</span>
-        <app-photo-upload
-          [disabled]="submitting()"
-          [maxPhotos]="1"
-          hintKey="claims.form.photo_hint"
-          (photosChange)="onPhotoChange($event)"
-        />
-        <p class="form-hint">{{ "claims.form.photo_privacy_note" | translate }}</p>
-        @if (photoFieldError()) {
-          <span class="form-error" role="alert">{{ photoFieldError() }}</span>
-        }
-      </div>
-    } @else {
+    <div class="form-field">
+      <span class="form-label">{{
+        "claims.form.photo_title" | translate
+      }}</span>
+      <app-photo-upload
+        [disabled]="submitting()"
+        [maxPhotos]="1"
+        hintKey="claims.form.photo_hint"
+        (photosChange)="onPhotoChange($event)"
+      />
+      <p class="form-hint">
+        {{ "claims.form.photo_privacy_note" | translate }}
+      </p>
+      @if (photoFieldError()) {
+        <span class="form-error" role="alert">{{ photoFieldError() }}</span>
+      }
+    </div>
+
+    <div class="claim-form__actions">
+      <app-button
+        type="submit"
+        variant="primary"
+        [disabled]="submitting() || submitBlocked() || loadingEligibility()"
+        [loading]="submitting()"
+      >
+        {{ "claims.form.submit" | translate }}
+      </app-button>
       <app-button
         type="button"
-        variant="outline"
+        variant="ghost"
         [disabled]="submitting()"
-        (clicked)="revealPhotoUpload()"
+        (clicked)="onCancel()"
       >
-        {{ "claims.form.photo_add_button" | translate }}
+        {{ "claims.form.cancel" | translate }}
       </app-button>
-    }
-
-    <app-button
-      type="submit"
-      variant="primary"
-      [disabled]="submitting()"
-      [loading]="submitting()"
-    >
-      {{ "claims.form.submit" | translate }}
-    </app-button>
+    </div>
   </form>
 }

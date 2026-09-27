@@ -36,6 +36,81 @@ public sealed class ClaimService(
 
     public const string AutoRejectReason = "Another claim approved";
 
+    public async Task<Result<ClaimSubmitEligibilityResponse>> GetSubmitEligibilityAsync(
+        Guid reportId,
+        Guid claimantId,
+        UserRole role,
+        CancellationToken cancellationToken = default)
+    {
+        if (AdminParticipation.ForbidIfAdmin(role) is { } forbidden)
+        {
+            return forbidden;
+        }
+
+        var reportSnapshot = await dbContext.Reports
+            .AsNoTracking()
+            .SingleOrDefaultAsync(existingReport => existingReport.Id == reportId, cancellationToken);
+
+        if (reportSnapshot is null)
+        {
+            return ResultError.NotFound("Report not found.");
+        }
+
+        if (reportSnapshot.Status != ReportStatus.Published)
+        {
+            return new ClaimSubmitEligibilityResponse
+            {
+                CanSubmit = false,
+                BlockCode = ErrorCodes.ClaimInvalidStatus,
+            };
+        }
+
+        if (reportSnapshot.ReporterId == claimantId)
+        {
+            return new ClaimSubmitEligibilityResponse
+            {
+                CanSubmit = false,
+                BlockCode = ErrorCodes.ClaimOwnReport,
+            };
+        }
+
+        var existingClaims = await dbContext.Claims
+            .AsNoTracking()
+            .Where(claim => claim.ReportId == reportId && claim.ClaimantId == claimantId)
+            .ToListAsync(cancellationToken);
+
+        if (existingClaims.Any(claim => claim.Status == ClaimStatus.Pending))
+        {
+            return new ClaimSubmitEligibilityResponse
+            {
+                CanSubmit = false,
+                BlockCode = ErrorCodes.ClaimPendingExists,
+            };
+        }
+
+        var failureCount = existingClaims.Count(claim => claim.CountsAsFailure);
+        if (failureCount >= MaxCountedFailures)
+        {
+            return new ClaimSubmitEligibilityResponse
+            {
+                CanSubmit = false,
+                BlockCode = ErrorCodes.ClaimAttemptLimit,
+            };
+        }
+
+        var quotaResult = await CheckDailySubmissionAsync(claimantId, cancellationToken);
+        if (quotaResult.IsExceeded)
+        {
+            return new ClaimSubmitEligibilityResponse
+            {
+                CanSubmit = false,
+                BlockCode = ErrorCodes.ClaimDailyQuota,
+            };
+        }
+
+        return new ClaimSubmitEligibilityResponse { CanSubmit = true };
+    }
+
     public async Task<Result<SubmitClaimResponse>> SubmitAsync(
         Guid reportId,
         Guid claimantId,

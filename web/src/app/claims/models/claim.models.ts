@@ -7,6 +7,11 @@ export interface SubmitClaimResponse {
   status: string;
 }
 
+export interface ClaimSubmitEligibility {
+  canSubmit: boolean;
+  blockCode?: string | null;
+}
+
 export type ClaimStatus =
   | 'pending'
   | 'approved'

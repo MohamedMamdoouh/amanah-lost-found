@@ -7,6 +7,7 @@ import { environment } from '../../environments/environment';
 import { PaginatedResponse } from '../shared/models/pagination.models';
 import {
   ClaimDetail,
+  ClaimSubmitEligibility,
   MyClaimSummary,
   ReportClaimSummary,
   SubmitClaimRequest,
@@ -16,6 +17,12 @@ import {
 @Injectable({ providedIn: 'root' })
 export class ClaimService {
   private readonly http = inject(HttpClient);
+
+  getSubmitEligibility(reportId: string): Observable<ClaimSubmitEligibility> {
+    return this.http.get<ClaimSubmitEligibility>(
+      `${environment.apiBaseUrl}/reports/${reportId}/claims/submit-eligibility`,
+    );
+  }
 
   submit(
     reportId: string,
