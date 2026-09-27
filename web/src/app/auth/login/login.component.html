@@ -116,6 +116,12 @@
           </div>
 
           @if (identifierChannel() === "phone") {
+            @if (mode() === "signup") {
+              <app-alert variant="info">
+                {{ "auth.login.signup_phone_sms_notice" | translate }}
+              </app-alert>
+            }
+
             <app-form-field
               [label]="'auth.login.phone_label' | translate"
               [hint]="'auth.login.phone_hint' | translate"

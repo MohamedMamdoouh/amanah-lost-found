@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
-import { firstValueFrom, map, Observable } from 'rxjs';
+import { NavigationEnd, Router } from '@angular/router';
+import { filter, firstValueFrom, map, Observable } from 'rxjs';
 
 import { AuthService } from '../auth/auth.service';
 import { environment } from '../../environments/environment';
@@ -30,8 +31,17 @@ export interface NotificationListResponse {
 export class NotificationService {
   private readonly http = inject(HttpClient);
   private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
 
   readonly unreadCount = signal(0);
+
+  constructor() {
+    this.router.events
+      .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
+      .subscribe(() => {
+        void this.refreshUnreadCount();
+      });
+  }
 
   private get baseUrl(): string {
     return `${environment.apiBaseUrl}/notifications`;

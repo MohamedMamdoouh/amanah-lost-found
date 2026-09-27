@@ -1,8 +1,16 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AppDatePipe } from '../i18n/app-date.pipe';
-import { Router } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { firstValueFrom } from 'rxjs';
+import {
+  distinctUntilChanged,
+  filter,
+  firstValueFrom,
+  map,
+  merge,
+  of,
+} from 'rxjs';
 
 import { NotificationItem, NotificationService } from './notification.service';
 import { LoadingIndicatorComponent } from '../shared/ui/loading-indicator/loading-indicator.component';
@@ -30,6 +38,7 @@ export class NotificationsComponent implements OnInit {
   private readonly notificationService = inject(NotificationService);
   private readonly router = inject(Router);
   private readonly translate = inject(TranslateService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
@@ -37,7 +46,26 @@ export class NotificationsComponent implements OnInit {
   readonly markingAll = signal(false);
 
   ngOnInit(): void {
-    void this.loadNotifications();
+    merge(
+      of(this.router.url),
+      this.router.events.pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+        map((event) => event.urlAfterRedirects),
+      ),
+    )
+      .pipe(
+        map((url) => this.notificationsPath(url)),
+        filter((path) => path === '/notifications'),
+        distinctUntilChanged(),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(() => {
+        void this.loadNotifications();
+      });
+  }
+
+  private notificationsPath(url: string): string {
+    return url.split('?')[0].split('#')[0];
   }
 
   typeLabel(type: string): string {
@@ -47,6 +75,10 @@ export class NotificationsComponent implements OnInit {
   linkLabel(item: NotificationItem): string {
     if (item.payload.deepLink.startsWith('/my/chats/')) {
       return this.translate.instant('notifications.open_chat');
+    }
+
+    if (item.payload.deepLink.startsWith('/my/incoming-claims')) {
+      return this.translate.instant('notifications.open_incoming_claims');
     }
 
     return this.translate.instant('notifications.open_report');
@@ -94,21 +126,13 @@ export class NotificationsComponent implements OnInit {
       }
     }
 
-    let deepLink = item.payload.deepLink;
-
-    if (
-      (item.payload.type === 'ClaimWithdrawnByClaimant' ||
-        item.payload.type === 'NewClaimSubmitted') &&
-      deepLink.startsWith('/my/reports/') &&
-      !deepLink.includes('#')
-    ) {
-      deepLink = `${deepLink}#claims-section`;
-    }
-
-    await this.router.navigateByUrl(deepLink);
+    await this.router.navigateByUrl(item.payload.deepLink);
   }
 
   private async loadNotifications(): Promise<void> {
+    this.loading.set(true);
+    this.error.set(null);
+
     try {
       const response = await firstValueFrom(this.notificationService.getAll());
       this.items.set(response.items);

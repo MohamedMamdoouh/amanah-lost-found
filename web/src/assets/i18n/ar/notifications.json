@@ -23,5 +23,6 @@
   "notifications.outcome.takedown": "تم مسح البلاغ",
   "notifications.outcome.ban": "تم اتخاذ إجراء ضد مستخدم",
   "notifications.open_report": "عرض البلاغ",
+  "notifications.open_incoming_claims": "طلبات على بلاغاتي",
   "notifications.open_chat": "فتح المحادثة"
 }
