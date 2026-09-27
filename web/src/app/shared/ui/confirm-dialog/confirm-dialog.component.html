@@ -1,25 +1,47 @@
-<div
-  class="confirm-dialog"
-  role="dialog"
-  [attr.aria-labelledby]="titleId()"
->
-  <h3 [id]="titleId()">{{ title() }}</h3>
-  <p>{{ intro() }}</p>
-  <div class="confirm-dialog__actions">
-    <app-button
-      variant="ghost"
-      [disabled]="loading() || disabled()"
-      (clicked)="cancelled.emit()"
-    >
-      {{ cancelLabel() }}
-    </app-button>
-    <app-button
-      [variant]="confirmVariant()"
-      [loading]="loading()"
-      [disabled]="disabled()"
-      (clicked)="confirmed.emit()"
-    >
-      {{ confirmLabel() }}
-    </app-button>
-  </div>
-</div>
+<div
+  class="app-dialog__overlay"
+  (click)="onBackdropClick()"
+  (keydown.escape)="onBackdropClick()"
+>
+  <div
+    class="app-dialog"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-labelledby]="titleId()"
+    (click)="$event.stopPropagation()"
+  >
+    <header class="app-dialog__header">
+      <div
+        class="app-dialog__icon"
+        [class.app-dialog__icon--success]="resolvedIconTone() === 'success'"
+        [class.app-dialog__icon--warning]="resolvedIconTone() === 'warning'"
+        [class.app-dialog__icon--danger]="resolvedIconTone() === 'danger'"
+        [class.app-dialog__icon--info]="resolvedIconTone() === 'info'"
+        aria-hidden="true"
+      >
+        <app-icon [name]="resolvedIcon()" size="md" />
+      </div>
+      <div class="app-dialog__heading">
+        <h2 [id]="titleId()" class="app-dialog__title">{{ title() }}</h2>
+        <p class="app-dialog__intro">{{ intro() }}</p>
+      </div>
+    </header>
+    <div class="app-dialog__actions">
+      <app-button
+        variant="ghost"
+        [disabled]="loading() || disabled()"
+        (clicked)="cancelled.emit()"
+      >
+        {{ cancelLabel() }}
+      </app-button>
+      <app-button
+        [variant]="confirmVariant()"
+        [loading]="loading()"
+        [disabled]="disabled()"
+        (clicked)="confirmed.emit()"
+      >
+        {{ confirmLabel() }}
+      </app-button>
+    </div>
+  </div>
+</div>

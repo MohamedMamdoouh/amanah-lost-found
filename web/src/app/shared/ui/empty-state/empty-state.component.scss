@@ -7,6 +7,18 @@
   box-shadow: var(--shadow-card);
 }
 
+.empty-state--inset {
+  margin-top: var(--space-md);
+  padding: var(--space-lg) var(--space-xl);
+  background: color-mix(in srgb, var(--color-bg) 42%, var(--color-surface));
+  border-style: dashed;
+  box-shadow: none;
+}
+
+.empty-state--inset .empty-state__content {
+  max-width: 28rem;
+}
+
 .empty-state--success .empty-state__icon {
   color: var(--color-success);
   opacity: 1;
@@ -23,6 +35,18 @@
 .empty-state__icon {
   color: var(--color-primary);
   opacity: 0.7;
+}
+
+.empty-state__icon-tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  color: var(--color-primary);
+  background: var(--color-accent-soft);
+  border-radius: var(--radius-md);
+  opacity: 1;
 }
 
 .empty-state__title {

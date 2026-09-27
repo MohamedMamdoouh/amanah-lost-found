@@ -18,6 +18,18 @@
   gap: var(--space-sm);
 }
 
+.chip-row {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--chip-row-gap);
+}
+
+.chip-row app-report-type-mark,
+.chip-row app-badge {
+  flex-shrink: 0;
+}
+
 .page-container {
   max-width: var(--content-width);
   margin-inline: auto;

@@ -1,85 +1,89 @@
-@if (routerLink(); as link) {
-  <a
-    class="listing-card"
-    [class.listing-card--unread]="unread()"
-    [routerLink]="link"
-  >
-    @if (imageUrl()) {
-      <img class="listing-card__image" [src]="imageUrl()" [alt]="title()" loading="lazy" />
+<div
+  class="listing-card"
+  [class.listing-card--unread]="unread()"
+  [class.listing-card--linked]="routerLink() && !splitLink()"
+  [class.listing-card--split-link]="splitLink() && routerLink()"
+>
+  @if (routerLink(); as link) {
+    @if (splitLink()) {
+      <div class="listing-card__main">
+        <ng-container *ngTemplateOutlet="cardBody" />
+      </div>
+    } @else {
+      <a
+        class="listing-card__main"
+        [routerLink]="link"
+        [fragment]="fragment() ?? undefined"
+      >
+        <ng-container *ngTemplateOutlet="cardBody" />
+      </a>
     }
-    <div class="listing-card__body">
-      <div class="listing-card__header">
-        @if (reportType(); as type) {
-          <app-report-type-mark [type]="type" />
-        }
-        @if (badgeLabel()) {
-          <app-badge [variant]="badgeVariant()">{{ badgeLabel() }}</app-badge>
-        }
-      </div>
-      <h3 class="listing-card__title">{{ title() }}</h3>
-      @if (subtitle()) {
-        <p class="listing-card__subtitle meta-text">{{ subtitle() }}</p>
+  } @else {
+    <div class="listing-card__main">
+      <ng-container *ngTemplateOutlet="cardBody" />
+    </div>
+  }
+
+  <div class="listing-card__actions" (click)="$event.stopPropagation()">
+    <ng-content select="[listingCardActions]" />
+  </div>
+</div>
+
+<ng-template #cardBody>
+  @if (imageUrl()) {
+    <img
+      class="listing-card__image"
+      [src]="imageUrl()"
+      [alt]="title()"
+      loading="lazy"
+    />
+  }
+  <div class="listing-card__body">
+    <div class="listing-card__header chip-row">
+      @if (reportType(); as type) {
+        <app-report-type-mark [type]="type" />
       }
-      <div class="listing-card__meta">
-        @if (location()) {
-          <span class="listing-card__meta-item">
-            <app-icon name="location" size="sm" />
-            {{ location() }}
-          </span>
-        }
-        @if (date()) {
-          <span class="listing-card__meta-item">
-            <app-icon name="calendar" size="sm" />
-            {{ date() }}
-          </span>
-        }
-      </div>
-      @if (actionLabel()) {
-        <span class="listing-card__action">
-          {{ actionLabel() }}
-          <app-icon name="chevron" size="sm" />
+      @if (badgeLabel()) {
+        <app-badge [variant]="badgeVariant()">{{ badgeLabel() }}</app-badge>
+      }
+    </div>
+    <h3 class="listing-card__title">
+      @if (titleIcon(); as icon) {
+        <app-icon [name]="icon" size="sm" />
+      }
+      {{ title() }}
+    </h3>
+    @if (subtitleLead()) {
+      <p class="listing-card__subtitle-lead meta-text">
+        <app-icon name="shield" size="sm" />
+        {{ subtitleLead() }}
+      </p>
+    }
+    @if (subtitle()) {
+      <p class="listing-card__subtitle meta-text">
+        <app-icon [name]="subtitleIcon() ?? 'tag'" size="sm" />
+        {{ subtitle() }}
+      </p>
+    }
+    <div class="listing-card__meta">
+      @if (location()) {
+        <span class="listing-card__meta-item">
+          <app-icon name="location" size="sm" />
+          {{ location() }}
+        </span>
+      }
+      @if (date()) {
+        <span class="listing-card__meta-item">
+          <app-icon name="calendar" size="sm" />
+          {{ date() }}
         </span>
       }
     </div>
-  </a>
-} @else {
-  <article class="listing-card" [class.listing-card--unread]="unread()">
-    @if (imageUrl()) {
-      <img class="listing-card__image" [src]="imageUrl()" [alt]="title()" loading="lazy" />
+    @if (actionLabel()) {
+      <span class="listing-card__action">
+        {{ actionLabel() }}
+        <app-icon name="chevron" size="sm" />
+      </span>
     }
-    <div class="listing-card__body">
-      <div class="listing-card__header">
-        @if (reportType(); as type) {
-          <app-report-type-mark [type]="type" />
-        }
-        @if (badgeLabel()) {
-          <app-badge [variant]="badgeVariant()">{{ badgeLabel() }}</app-badge>
-        }
-      </div>
-      <h3 class="listing-card__title">{{ title() }}</h3>
-      @if (subtitle()) {
-        <p class="listing-card__subtitle meta-text">{{ subtitle() }}</p>
-      }
-      <div class="listing-card__meta">
-        @if (location()) {
-          <span class="listing-card__meta-item">
-            <app-icon name="location" size="sm" />
-            {{ location() }}
-          </span>
-        }
-        @if (date()) {
-          <span class="listing-card__meta-item">
-            <app-icon name="calendar" size="sm" />
-            {{ date() }}
-          </span>
-        }
-      </div>
-      @if (actionLabel()) {
-        <span class="listing-card__action">
-          {{ actionLabel() }}
-          <app-icon name="chevron" size="sm" />
-        </span>
-      }
-    </div>
-  </article>
-}
+  </div>
+</ng-template>

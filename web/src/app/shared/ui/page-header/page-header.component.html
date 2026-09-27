@@ -1,17 +1,16 @@
 <header class="page-header">
   @if (backLink(); as link) {
     <a class="page-header__back" [routerLink]="link">
+      <app-icon name="chevron" size="sm" class="page-header__back-icon" />
       @if (backLabel()) {
         {{ backLabel() }}
-      } @else {
-        ←
       }
     </a>
   }
   @if (eyebrow()) {
     <p class="page-header__eyebrow eyebrow">{{ eyebrow() }}</p>
   }
-  <h1 class="page-header__title">{{ title() }}</h1>
+  <h1 class="page-header__title" [attr.id]="titleId()">{{ title() }}</h1>
   @if (intro()) {
     <p class="page-header__intro">{{ intro() }}</p>
   }

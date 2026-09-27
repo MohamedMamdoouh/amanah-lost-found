@@ -13,7 +13,11 @@ export type IconName =
   | 'lost'
   | 'found'
   | 'menu'
-  | 'close';
+  | 'close'
+  | 'person'
+  | 'send'
+  | 'clock'
+  | 'tag';
 
 @Component({
   selector: 'app-icon',
@@ -201,6 +205,53 @@ export type IconName =
             stroke-width="2"
             stroke-linecap="round"
           />
+        }
+        @case ('person') {
+          <circle
+            cx="12"
+            cy="8"
+            r="3.5"
+            stroke="currentColor"
+            stroke-width="2"
+          />
+          <path
+            d="M5 20C5.5 16 8 14 12 14C16 14 18.5 16 19 20"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+        }
+        @case ('send') {
+          <path
+            d="M4 12L20 4L13 20L11 13L4 12Z"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linejoin="round"
+          />
+        }
+        @case ('clock') {
+          <circle
+            cx="12"
+            cy="12"
+            r="8"
+            stroke="currentColor"
+            stroke-width="2"
+          />
+          <path
+            d="M12 8V12L15 14"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+        }
+        @case ('tag') {
+          <path
+            d="M20 12L12 20L4 12V4h8l8 8Z"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linejoin="round"
+          />
+          <circle cx="7.5" cy="7.5" r="1.5" fill="currentColor" />
         }
       }
     </svg>

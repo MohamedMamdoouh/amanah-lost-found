@@ -1,7 +1,16 @@
-<div class="empty-state amanah-blobs" [class.empty-state--success]="variant() === 'success'">
+<div
+  class="empty-state"
+  [class.amanah-blobs]="!inset()"
+  [class.empty-state--inset]="inset()"
+  [class.empty-state--success]="variant() === 'success'"
+>
   <div class="empty-state__content">
     <div class="empty-state__icon" aria-hidden="true">
-      @if (variant() === 'success') {
+      @if (icon()) {
+        <span class="empty-state__icon-tile">
+          <app-icon [name]="icon()!" size="lg" />
+        </span>
+      } @else if (variant() === 'success') {
         <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
           <circle cx="32" cy="32" r="30" stroke="currentColor" stroke-width="2" />
           <path

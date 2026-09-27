@@ -5,11 +5,17 @@
 .page-header__back {
   display: inline-flex;
   align-items: center;
+  gap: 0.35rem;
   margin-bottom: var(--space-md);
   font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--color-primary);
   text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.page-header__back-icon {
+  transform: scaleX(-1);
 }
 
 .page-header__back:hover {
@@ -39,4 +45,17 @@
   align-items: center;
   gap: var(--space-sm);
   margin-top: var(--space-md);
+
+  /* Projected meta (parent template) is not scoped to this component. */
+  ::ng-deep .page-header__meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-xs);
+  }
+
+  ::ng-deep .page-header__meta-date {
+    font-size: var(--font-size-md);
+    color: var(--color-text-muted);
+  }
 }
