@@ -195,6 +195,10 @@ export class ReportDetailComponent implements OnInit {
     if (this.categories().length === 0 && !this.catalogLoading()) {
       await this.loadCatalog();
     }
+
+    // Category answers are applied on load, before the catalog exists, so the
+    // field group is empty until the editor opens and definitions are known.
+    this.restoreRejectedCategoryFields();
   }
 
   closeResubmitEditor(): void {
@@ -413,6 +417,23 @@ export class ReportDetailComponent implements OnInit {
     } finally {
       this.catalogLoading.set(false);
     }
+  }
+
+  private restoreRejectedCategoryFields(): void {
+    if (this.selectedCategory() !== null || this.categories().length === 0) {
+      return;
+    }
+
+    const report = this.report();
+    if (!report) {
+      return;
+    }
+
+    const code =
+      this.editForm.controls.categoryCode.value || report.categoryCode;
+    const existingValues =
+      code === report.categoryCode ? report.categoryFields : {};
+    this.onCategoryChanged(code, existingValues);
   }
 
   private populateEditForm(report: ReportDetail): void {
