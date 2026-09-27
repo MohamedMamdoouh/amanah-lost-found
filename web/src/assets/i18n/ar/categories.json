@@ -17,6 +17,9 @@
   "category.electronics.fields.brand_model": "الماركة أو الموديل",
   "category.accessories": "إكسسوارات",
   "category.accessories.fields.accessory_type": "نوع الإكسسوار",
+  "category.earpuds": "سماعات أذن",
+  "category.earpuds.fields.model": "الموديل",
+  "category.earpuds.fields.colour": "اللون",
   "category.other": "أشياء أخرى",
   "category.other.fields.item_type": "نوع الشيء"
 }
