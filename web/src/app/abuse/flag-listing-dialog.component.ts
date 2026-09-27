@@ -8,6 +8,7 @@ import { ApiErrorService } from '../i18n/api-error.service';
 import { AlertComponent } from '../shared/ui/alert/alert.component';
 import { ButtonComponent } from '../shared/ui/button/button.component';
 import { FormFieldComponent } from '../shared/ui/form-field/form-field.component';
+import { IconComponent } from '../shared/ui/icon/icon.component';
 import {
   ABUSE_FLAG_REASONS,
   AbuseFlagService,
@@ -24,6 +25,7 @@ const NOTE_MAX_LENGTH = 500;
     AlertComponent,
     ButtonComponent,
     FormFieldComponent,
+    IconComponent,
     ReactiveFormsModule,
     TranslateModule,
   ],

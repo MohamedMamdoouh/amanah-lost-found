@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 
+import { AuthService } from '../../auth/auth.service';
 import { ButtonComponent } from '../../shared/ui/button/button.component';
 import { IconComponent } from '../../shared/ui/icon/icon.component';
 
@@ -12,4 +13,6 @@ import { IconComponent } from '../../shared/ui/icon/icon.component';
   templateUrl: './safety.component.html',
   styleUrl: './safety.component.scss',
 })
-export class SafetyComponent {}
+export class SafetyComponent {
+  readonly auth = inject(AuthService);
+}

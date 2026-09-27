@@ -1,7 +1,7 @@
 <article class="info-page page-container">
   <header class="info-page__masthead">
-    <h1>{{ 'pages.safety.title' | translate }}</h1>
-    <p class="info-page__lead">{{ 'pages.safety.lead' | translate }}</p>
+    <h1>{{ "pages.safety.title" | translate }}</h1>
+    <p class="info-page__lead">{{ "pages.safety.lead" | translate }}</p>
   </header>
 
   <div class="info-page__sections info-page__sections--grid">
@@ -9,12 +9,12 @@
       <div class="info-card__icon" aria-hidden="true">
         <app-icon name="shield" size="lg" />
       </div>
-      <h2>{{ 'pages.safety.handover.title' | translate }}</h2>
-      <p>{{ 'pages.safety.handover.body' | translate }}</p>
+      <h2>{{ "pages.safety.handover.title" | translate }}</h2>
+      <p>{{ "pages.safety.handover.body" | translate }}</p>
       <ul class="info-card__list">
-        <li>{{ 'pages.safety.handover.item_public' | translate }}</li>
-        <li>{{ 'pages.safety.handover.item_meet' | translate }}</li>
-        <li>{{ 'pages.safety.handover.item_verify' | translate }}</li>
+        <li>{{ "pages.safety.handover.item_public" | translate }}</li>
+        <li>{{ "pages.safety.handover.item_meet" | translate }}</li>
+        <li>{{ "pages.safety.handover.item_verify" | translate }}</li>
       </ul>
     </section>
 
@@ -22,28 +22,30 @@
       <div class="info-card__icon" aria-hidden="true">
         <app-icon name="lost" size="lg" />
       </div>
-      <h2>{{ 'pages.safety.abuse.title' | translate }}</h2>
-      <p>{{ 'pages.safety.abuse.body' | translate }}</p>
+      <h2>{{ "pages.safety.abuse.title" | translate }}</h2>
+      <p>{{ "pages.safety.abuse.body" | translate }}</p>
     </section>
 
     <section class="info-card">
       <div class="info-card__icon" aria-hidden="true">
         <app-icon name="chat" size="lg" />
       </div>
-      <h2>{{ 'pages.safety.privacy.title' | translate }}</h2>
-      <p>{{ 'pages.safety.privacy.body' | translate }}</p>
+      <h2>{{ "pages.safety.privacy.title" | translate }}</h2>
+      <p>{{ "pages.safety.privacy.body" | translate }}</p>
       <ul class="info-card__list">
-        <li>{{ 'pages.safety.privacy.item_contact' | translate }}</li>
-        <li>{{ 'pages.safety.privacy.item_in_app' | translate }}</li>
-        <li>{{ 'pages.safety.privacy.item_payment' | translate }}</li>
+        <li>{{ "pages.safety.privacy.item_contact" | translate }}</li>
+        <li>{{ "pages.safety.privacy.item_in_app" | translate }}</li>
+        <li>{{ "pages.safety.privacy.item_payment" | translate }}</li>
       </ul>
     </section>
   </div>
 
-  <aside class="info-page__cta">
-    <p>{{ 'pages.safety.report.body' | translate }}</p>
-    <app-button variant="primary" [routerLink]="'/support'">
-      {{ 'pages.safety.report.cta' | translate }}
-    </app-button>
-  </aside>
+  @if (!auth.isAdmin()) {
+    <aside class="info-page__cta">
+      <p>{{ "pages.safety.report.body" | translate }}</p>
+      <app-button variant="primary" [routerLink]="'/support'">
+        {{ "pages.safety.report.cta" | translate }}
+      </app-button>
+    </aside>
+  }
 </article>
