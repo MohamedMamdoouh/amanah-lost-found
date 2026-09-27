@@ -8,26 +8,15 @@
     <app-alert>{{ error() }}</app-alert>
   } @else if (report()) {
     @let detail = report()!;
-    <app-page-header
-      [backLink]="'/browse'"
+    <app-report-masthead
+      backLink="/browse"
       [backLabel]="'browse.detail.back' | translate"
       [title]="detail.title"
-      [intro]="
-        (detail.status !== 'published'
-          ? domainLabels.reportStatus(detail.status) + ' · '
-          : '') +
-        (detail.publishedAt ? (detail.publishedAt | appDate) : '')
-      "
-    >
-      <app-report-type-mark [type]="detail.type" />
-      @if (domainLabels.reportBadgeLabel(detail.status, "browse"); as badge) {
-        <app-badge
-          [variant]="domainLabels.reportBadgeVariant(detail.status, 'browse')"
-        >
-          {{ badge }}
-        </app-badge>
-      }
-    </app-page-header>
+      titleId="public-report-detail-title"
+      [reportType]="detail.type"
+      [badgeLabel]="domainLabels.reportBadgeLabel(detail.status, 'browse')"
+      [badgeVariant]="domainLabels.reportBadgeVariant(detail.status, 'browse')"
+    />
 
     <app-report-dossier [report]="detail" [photos]="displayPhotos()" />
 
@@ -36,68 +25,111 @@
         class="public-report-detail__actions"
         aria-labelledby="public-report-actions-title"
       >
-        <h2 id="public-report-actions-title">
-          {{ "browse.detail.actions_title" | translate }}
-        </h2>
+        <div class="public-report-detail__actions-panel">
+          <h2
+            id="public-report-actions-title"
+            class="public-report-detail__actions-title"
+          >
+            {{ "browse.detail.actions_title" | translate }}
+          </h2>
 
-        @if (showClaimForm() && claimFormOpen()) {
-          <app-claim-form [reportId]="detail.id" [reportType]="detail.type" />
-        } @else if (isListingOwner()) {
-          <aside class="public-report-detail__owner-gate" role="note">
-            <span
-              class="public-report-detail__owner-gate-icon"
-              aria-hidden="true"
-            >
-              <app-icon name="shield" size="md" />
-            </span>
-            <p class="public-report-detail__owner-gate-text">
-              {{ "browse.detail.claim_own_note" | translate }}
-            </p>
-          </aside>
-        } @else if (!hasPendingClaim()) {
-          <div class="public-report-detail__action-buttons">
-            <app-button
-              variant="primary"
-              [disabled]="isClaimDisabled()"
-              (clicked)="onClaimClick()"
-            >
-              {{ "browse.detail.claim_button" | translate }}
-            </app-button>
+          <div class="public-report-detail__actions-body">
+            @if (showClaimForm() && claimFormOpen()) {
+              <app-claim-form
+                [reportId]="detail.id"
+                [reportType]="detail.type"
+                (cancelled)="closeClaimForm()"
+              />
+            } @else if (isListingOwner()) {
+              <aside class="public-report-detail__owner-gate" role="note">
+                <span
+                  class="public-report-detail__owner-gate-icon"
+                  aria-hidden="true"
+                >
+                  <app-icon name="shield" size="md" />
+                </span>
+                <p class="public-report-detail__owner-gate-text">
+                  {{ "browse.detail.claim_own_note" | translate }}
+                </p>
+              </aside>
+            } @else if (isClaimInProgress()) {
+              <aside class="public-report-detail__claim-gate" role="status">
+                <span
+                  class="public-report-detail__claim-gate-icon"
+                  aria-hidden="true"
+                >
+                  <app-icon name="shield" size="md" />
+                </span>
+                <p class="public-report-detail__claim-gate-text">
+                  {{ "browse.detail.claim_in_progress_note" | translate }}
+                </p>
+              </aside>
+            } @else if (!hasPendingClaim()) {
+              <div class="public-report-detail__action-buttons">
+                <app-button
+                  variant="primary"
+                  [disabled]="isClaimDisabled()"
+                  (clicked)="onClaimClick()"
+                >
+                  {{ "browse.detail.claim_button" | translate }}
+                </app-button>
+                <app-button
+                  variant="secondary"
+                  [disabled]="isMessageDisabled()"
+                  (clicked)="onMessageClick()"
+                >
+                  {{ "browse.detail.message_button" | translate }}
+                </app-button>
+              </div>
+            } @else {
+              <div class="public-report-detail__action-buttons">
+                <app-button
+                  variant="secondary"
+                  [disabled]="isMessageDisabled()"
+                  (clicked)="onMessageClick()"
+                >
+                  {{ "browse.detail.message_button" | translate }}
+                </app-button>
+              </div>
+            }
+
+            @if (
+              isListingOwner() ||
+              isClaimInProgress() ||
+              (showClaimForm() && claimFormOpen())
+            ) {
+              <div class="public-report-detail__action-buttons">
+                <app-button
+                  variant="secondary"
+                  [disabled]="isMessageDisabled()"
+                  (clicked)="onMessageClick()"
+                >
+                  {{ "browse.detail.message_button" | translate }}
+                </app-button>
+              </div>
+            }
+
+            @if (messageHint(); as messageNote) {
+              <aside
+                class="public-report-detail__chat-gate"
+                [class.public-report-detail__chat-gate--awaiting]="
+                  isMessageAwaitingApproval()
+                "
+                role="note"
+              >
+                <span
+                  class="public-report-detail__chat-gate-icon"
+                  aria-hidden="true"
+                >
+                  <app-icon name="chat" size="md" />
+                </span>
+                <p class="public-report-detail__chat-gate-text">
+                  {{ messageNote }}
+                </p>
+              </aside>
+            }
           </div>
-
-          @if (claimHint(); as claimNote) {
-            <p class="public-report-detail__action-note">{{ claimNote }}</p>
-          }
-        }
-
-        <div class="public-report-detail__action-buttons">
-          <app-button
-            variant="secondary"
-            [disabled]="isMessageDisabled()"
-            (clicked)="onMessageClick()"
-          >
-            {{ "browse.detail.message_button" | translate }}
-          </app-button>
         </div>
-        @if (messageHint(); as messageNote) {
-          <aside
-            class="public-report-detail__chat-gate"
-            [class.public-report-detail__chat-gate--awaiting]="
-              isMessageAwaitingApproval()
-            "
-            role="note"
-          >
-            <span
-              class="public-report-detail__chat-gate-icon"
-              aria-hidden="true"
-            >
-              <app-icon name="chat" size="md" />
-            </span>
-            <p class="public-report-detail__chat-gate-text">
-              {{ messageNote }}
-            </p>
-          </aside>
-        }
       </section>
     }
 
@@ -137,41 +169,13 @@
             </p>
           </aside>
         } @else if (showOpenFlagSummary()) {
-          @if (openFlag(); as flag) {
-            <app-card variant="flat" padding="md">
-              <h3 class="public-report-detail__flag-existing-title">
-                {{ "abuse.flag.existing_title" | translate }}
-              </h3>
-              <p class="public-report-detail__flag-existing-intro">
-                {{ "abuse.flag.existing_intro" | translate }}
-              </p>
-              <dl class="public-report-detail__flag-summary">
-                <div>
-                  <dt>{{ "abuse.flag.status_label" | translate }}</dt>
-                  <dd>{{ "abuse.flag.status_open" | translate }}</dd>
-                </div>
-                <div>
-                  <dt>{{ "abuse.flag.reason_label" | translate }}</dt>
-                  <dd>{{ flagReasonLabel(flag.reason) }}</dd>
-                </div>
-                @if (flag.note) {
-                  <div>
-                    <dt>{{ "abuse.flag.note_label" | translate }}</dt>
-                    <dd>{{ flag.note }}</dd>
-                  </div>
-                }
-                <div>
-                  <dt>{{ "abuse.flag.submitted_at_label" | translate }}</dt>
-                  <dd>{{ flag.createdAt | appDate }}</dd>
-                </div>
-              </dl>
-              <div class="public-report-detail__action-buttons">
-                <app-button variant="secondary" (clicked)="onFlagClick()">
-                  {{ "abuse.flag.view_button" | translate }}
-                </app-button>
-              </div>
-            </app-card>
-          }
+          <div
+            class="public-report-detail__action-buttons public-report-detail__action-buttons--flush"
+          >
+            <app-button variant="secondary" (clicked)="onFlagClick()">
+              {{ "abuse.flag.view_button" | translate }}
+            </app-button>
+          </div>
         } @else if (showFlagAction()) {
           <div
             class="public-report-detail__action-buttons public-report-detail__action-buttons--flush"
@@ -202,6 +206,17 @@
       <app-claim-resolution-actions
         [claimId]="approvedClaimId()!"
         (changed)="onResolutionChanged()"
+      />
+    }
+
+    @if (actionFeedback(); as feedback) {
+      <app-action-feedback-dialog
+        titleId="public-report-action-feedback-title"
+        [title]="feedback.title"
+        [message]="feedback.message"
+        [closeLabel]="'common.dialog.close_now' | translate"
+        [countdownLabel]="'common.dialog.auto_close' | translate"
+        (closed)="closeActionFeedback()"
       />
     }
   }

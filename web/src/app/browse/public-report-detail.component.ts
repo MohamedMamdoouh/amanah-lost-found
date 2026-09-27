@@ -24,14 +24,15 @@ import { DomainLabelService } from '../i18n/domain-label.service';
 import { ReportType } from '../reports/models/report.models';
 import { ReportService } from '../reports/report.service';
 import { AlertComponent } from '../shared/ui/alert/alert.component';
-import { BadgeComponent } from '../shared/ui/badge/badge.component';
 import { ButtonComponent } from '../shared/ui/button/button.component';
-import { CardComponent } from '../shared/ui/card/card.component';
+import {
+  ActionFeedbackDialogComponent,
+  ActionFeedbackState,
+} from '../shared/ui/action-feedback-dialog/action-feedback-dialog.component';
 import { IconComponent } from '../shared/ui/icon/icon.component';
 import { LoadingIndicatorComponent } from '../shared/ui/loading-indicator/loading-indicator.component';
-import { PageHeaderComponent } from '../shared/ui/page-header/page-header.component';
 import { ReportDossierComponent } from '../shared/ui/report-dossier/report-dossier.component';
-import { ReportTypeMarkComponent } from '../shared/ui/report-type-mark/report-type-mark.component';
+import { ReportMastheadComponent } from '../shared/ui/report-masthead/report-masthead.component';
 import { DisplayPhoto } from '../uploads/photo-loader.util';
 import { BrowseService, mapBrowseError } from './browse.service';
 import { PublicReportDetail } from './models/browse.models';
@@ -40,19 +41,16 @@ import { PublicReportDetail } from './models/browse.models';
   selector: 'app-public-report-detail',
   standalone: true,
   imports: [
-    AppDatePipe,
     AlertComponent,
-    BadgeComponent,
+    ActionFeedbackDialogComponent,
     ButtonComponent,
-    CardComponent,
     ClaimFormComponent,
     ClaimResolutionActionsComponent,
     FlagListingDialogComponent,
     IconComponent,
     LoadingIndicatorComponent,
-    PageHeaderComponent,
     ReportDossierComponent,
-    ReportTypeMarkComponent,
+    ReportMastheadComponent,
     TranslateModule,
   ],
   templateUrl: './public-report-detail.component.html',
@@ -79,6 +77,7 @@ export class PublicReportDetailComponent implements OnInit {
   readonly openFlag = signal<FlagListingResponse | null>(null);
   readonly flagDialogOpen = signal(false);
   readonly flagSuccessMessage = signal<string | null>(null);
+  readonly actionFeedback = signal<ActionFeedbackState | null>(null);
   readonly claimFormOpen = signal(false);
 
   readonly displayPhotos = computed<DisplayPhoto[]>(() => {
@@ -142,11 +141,6 @@ export class PublicReportDetailComponent implements OnInit {
     );
   }
 
-  flagReasonLabel(code: string): string {
-    const translated = this.translate.instant(code);
-    return translated === code ? code : translated;
-  }
-
   hasPendingClaim(): boolean {
     return this.pendingClaimOnReport();
   }
@@ -177,18 +171,6 @@ export class PublicReportDetailComponent implements OnInit {
     return this.auth.isLoggedIn() && this.chatThreadId() === null;
   }
 
-  claimHint(): string | null {
-    if (this.isClaimInProgress()) {
-      return this.translate.instant('browse.detail.claim_in_progress_note');
-    }
-
-    if (this.isPublished() && !this.auth.isLoggedIn()) {
-      return this.translate.instant('browse.detail.claim_login_required');
-    }
-
-    return null;
-  }
-
   messageHint(): string | null {
     if (!this.auth.isLoggedIn()) {
       return this.translate.instant('browse.detail.message_login_required');
@@ -214,6 +196,10 @@ export class PublicReportDetailComponent implements OnInit {
     }
 
     this.claimFormOpen.set(true);
+  }
+
+  closeClaimForm(): void {
+    this.claimFormOpen.set(false);
   }
 
   onMessageClick(): void {
@@ -265,6 +251,20 @@ export class PublicReportDetailComponent implements OnInit {
     );
   }
 
+  openActionFeedback(
+    title: string,
+    message: string,
+    onClosed?: () => void,
+  ): void {
+    this.actionFeedback.set({ title, message, onClosed });
+  }
+
+  closeActionFeedback(): void {
+    const feedback = this.actionFeedback();
+    this.actionFeedback.set(null);
+    feedback?.onClosed?.();
+  }
+
   showResolutionActions(): boolean {
     const detail = this.report();
     if (!detail || this.auth.isAdmin()) {
@@ -289,6 +289,7 @@ export class PublicReportDetailComponent implements OnInit {
 
   private async loadReport(id: string, type: ReportType): Promise<void> {
     this.claimFormOpen.set(false);
+    this.flagSuccessMessage.set(null);
     const request$ =
       type === 'lost'
         ? this.browseService.getLostDetail(id)
@@ -324,8 +325,7 @@ export class PublicReportDetailComponent implements OnInit {
       return;
     }
 
-    const flaggable =
-      status === 'published' || status === 'claim_in_progress';
+    const flaggable = status === 'published' || status === 'claim_in_progress';
     if (!flaggable) {
       return;
     }
@@ -341,10 +341,7 @@ export class PublicReportDetailComponent implements OnInit {
       );
       this.openFlag.set(flag);
     } catch (error) {
-      if (
-        error instanceof HttpErrorResponse &&
-        error.status === 404
-      ) {
+      if (error instanceof HttpErrorResponse && error.status === 404) {
         return;
       }
     }
@@ -362,16 +359,8 @@ export class PublicReportDetailComponent implements OnInit {
     }
 
     const approvedId = this.isListingOwner()
-      ? await loadReporterApprovedClaimId(
-          this.claimService,
-          reportId,
-          status,
-        )
-      : await loadClaimantApprovedClaimId(
-          this.claimService,
-          reportId,
-          status,
-        );
+      ? await loadReporterApprovedClaimId(this.claimService, reportId, status)
+      : await loadClaimantApprovedClaimId(this.claimService, reportId, status);
 
     this.approvedClaimId.set(approvedId);
     if (!approvedId) {

@@ -59,89 +59,106 @@
   margin-top: var(--space-md);
 }
 
-.report-detail__dialog {
-  margin-top: var(--space-lg);
-  padding: var(--space-lg);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-}
-
-.report-detail__reasons {
-  border: none;
-  margin: var(--space-md) 0;
-  padding: 0;
-}
-
-.report-detail__reasons-legend {
-  font-weight: 700;
-  margin-bottom: var(--space-sm);
-}
-
-.report-detail__reason {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  margin-bottom: var(--space-xs);
-  cursor: pointer;
-}
-
-.report-detail__dialog-actions {
-  display: flex;
-  gap: var(--space-sm);
-}
-
-.report-detail__cancel,
-.report-detail__confirm {
-  padding: var(--space-sm) var(--space-lg);
-  font: inherit;
-  font-weight: 600;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-}
-
-.report-detail__cancel {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-}
-
-.report-detail__confirm {
-  color: #fff;
-  background: var(--color-error);
-  border: none;
-}
-
-.report-detail__confirm:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
 .report-detail__rejection {
   margin-bottom: var(--space-lg);
-  padding: var(--space-lg);
-  background: var(--color-error-bg);
-  border: 1px solid #f5c2c2;
-  border-radius: var(--radius-md);
 }
 
-.report-detail__rejection h2 {
-  margin: 0 0 var(--space-sm);
-  font-size: 1rem;
+.report-detail__rejection-panel {
+  overflow: hidden;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.report-detail__rejection-verdict {
+  padding: var(--space-md) var(--space-lg);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-error-bg) 14%, var(--color-highlight)) 0%,
+    var(--color-highlight) 55%,
+    var(--color-surface) 100%
+  );
+}
+
+.report-detail__rejection-verdict-head {
+  margin: 0 0 var(--space-xs);
+}
+
+.report-detail__rejection-label {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.report-detail__rejection-verdict-body {
+  display: grid;
+  gap: var(--space-sm);
 }
 
 .report-detail__rejection-reason {
-  margin: 0 0 var(--space-xs);
-  font-weight: 700;
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  line-height: var(--line-height-base);
+  color: var(--color-text);
+  text-wrap: balance;
 }
 
 .report-detail__rejection-note {
-  margin: 0;
+  padding: var(--space-sm) var(--space-md);
+  background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border) 65%, transparent);
+  border-radius: var(--radius-md);
+}
+
+.report-detail__rejection-note-label {
+  margin: 0 0 var(--space-xs);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
   color: var(--color-text-muted);
 }
 
-.report-detail__edit-intro {
-  margin: 0 0 var(--space-lg);
-  color: var(--color-text-muted);
+.report-detail__rejection-note-text {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-base);
+  color: var(--color-text);
+}
+
+.report-detail__rejection-next {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-lg);
+  background: var(--color-highlight);
+}
+
+.report-detail__rejection-next--solo {
+  padding-block: var(--space-lg);
+}
+
+.report-detail__rejection-next-icon {
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+  color: var(--color-primary);
+}
+
+.report-detail__rejection-next-text {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-base);
+  color: var(--color-text);
+}
+
+.report-detail__edit-card {
+  padding: var(--space-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
 }
 
 .report-detail__edit-form {
@@ -197,20 +214,4 @@
   align-items: center;
   gap: var(--space-sm);
   cursor: pointer;
-}
-
-.report-detail__resubmit {
-  padding: var(--space-sm) var(--space-lg);
-  font: inherit;
-  font-weight: 600;
-  color: #fff;
-  background: var(--color-accent);
-  border: none;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-}
-
-.report-detail__resubmit:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }

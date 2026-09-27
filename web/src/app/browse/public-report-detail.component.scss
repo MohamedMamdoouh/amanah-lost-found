@@ -3,20 +3,37 @@
   margin: 0 auto;
 }
 
-.public-report-detail__actions h2 {
-  font-size: 1rem;
-  margin: 0 0 var(--space-sm);
+.public-report-detail__actions {
+  margin-top: var(--space-xl);
 }
 
-.public-report-detail__actions {
-  margin-top: var(--space-lg);
+.public-report-detail__actions-panel {
+  padding: var(--space-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.public-report-detail__actions-title {
+  margin: 0 0 var(--space-md);
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: var(--line-height-tight);
+}
+
+.public-report-detail__actions-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
 }
 
 .public-report-detail__action-buttons {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-sm);
-  margin-top: var(--space-md);
+  margin-top: 0;
 }
 
 .public-report-detail__actions app-claim-form {
@@ -58,12 +75,40 @@
   line-height: var(--line-height-base);
 }
 
+.public-report-detail__claim-gate {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-sm);
+  align-items: start;
+  margin-bottom: 0;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-accent-soft);
+  border: 1px solid
+    color-mix(in srgb, var(--color-primary) 22%, var(--color-border));
+  border-inline-start: 3px solid var(--color-primary);
+  border-radius: var(--radius-md);
+}
+
+.public-report-detail__claim-gate-icon {
+  display: inline-flex;
+  color: var(--color-primary);
+  margin-top: 0.1rem;
+}
+
+.public-report-detail__claim-gate-text {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text);
+  line-height: var(--line-height-base);
+}
+
 .public-report-detail__chat-gate {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: var(--space-sm);
   align-items: start;
-  margin-top: var(--space-sm);
+  margin-top: 0;
   padding: var(--space-sm) var(--space-md);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -73,7 +118,11 @@
 
 .public-report-detail__chat-gate--awaiting {
   background: var(--color-accent-soft);
-  border-color: color-mix(in srgb, var(--color-primary) 22%, var(--color-border));
+  border-color: color-mix(
+    in srgb,
+    var(--color-primary) 22%,
+    var(--color-border)
+  );
   border-inline-start-color: var(--color-primary);
 }
 
@@ -136,6 +185,10 @@
 
 .public-report-detail__action-buttons--flush {
   margin-top: 0;
+}
+
+.public-report-detail__flag app-alert + .public-report-detail__action-buttons {
+  margin-top: var(--space-sm);
 }
 
 .public-report-detail__flag-existing-title {

@@ -1,12 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { AppDatePipe } from '../../i18n/app-date.pipe';
-import {
-  Component,
-  DestroyRef,
-  inject,
-  OnInit,
-  signal,
-} from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   FormBuilder,
@@ -28,14 +21,19 @@ import {
   showResolutionActions,
 } from '../../claims/resolution/resolution.helpers';
 import { ApiErrorService } from '../../i18n/api-error.service';
+import { DomainLabelService } from '../../i18n/domain-label.service';
 import { clientControlError } from '../../i18n/form-validation';
 import { CatalogLabelService } from '../../i18n/catalog-label.service';
+import {
+  ActionFeedbackDialogComponent,
+  ActionFeedbackState,
+} from '../../shared/ui/action-feedback-dialog/action-feedback-dialog.component';
 import { ButtonComponent } from '../../shared/ui/button/button.component';
+import { IconComponent } from '../../shared/ui/icon/icon.component';
 import { LoadingIndicatorComponent } from '../../shared/ui/loading-indicator/loading-indicator.component';
-import { PageHeaderComponent } from '../../shared/ui/page-header/page-header.component';
+import { ReportMastheadComponent } from '../../shared/ui/report-masthead/report-masthead.component';
 import { PhotoLightboxComponent } from '../../shared/ui/photo-lightbox/photo-lightbox.component';
 import { ReportDossierComponent } from '../../shared/ui/report-dossier/report-dossier.component';
-import { ReportTypeMarkComponent } from '../../shared/ui/report-type-mark/report-type-mark.component';
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 import {
   DisplayPhoto,
@@ -43,25 +41,26 @@ import {
   loadDisplayPhotos,
 } from '../../uploads/photo-loader.util';
 import { ReportPhotoUploadService } from '../../uploads/report-photo-upload.service';
-import {
-  ReportDetail,
-  WithdrawalReason,
-} from '../models/report.models';
+import { ReportDetail } from '../models/report.models';
 import { PhotoUploadComponent } from '../photo-upload/photo-upload.component';
 import { ReportService } from '../report.service';
 import {
   buildCategoryFieldsGroup,
   buildUpdateReportRequest,
+  REPORT_TITLE_MAX_LENGTH,
+  reportTitleValidators,
 } from '../shared/report-form.helpers';
+import { WithdrawReportDialogComponent } from '../withdraw-report-dialog/withdraw-report-dialog.component';
 
 @Component({
   selector: 'app-report-detail',
   standalone: true,
   imports: [
-    AppDatePipe,
+    ActionFeedbackDialogComponent,
     ButtonComponent,
+    IconComponent,
     LoadingIndicatorComponent,
-    PageHeaderComponent,
+    ReportMastheadComponent,
     PhotoLightboxComponent,
     ReactiveFormsModule,
     ReportDossierComponent,
@@ -70,7 +69,7 @@ import {
     PhotoUploadComponent,
     ClaimResolutionActionsComponent,
     ReportClaimsSectionComponent,
-    ReportTypeMarkComponent,
+    WithdrawReportDialogComponent,
   ],
   templateUrl: './report-detail.component.html',
   styleUrl: './report-detail.component.scss',
@@ -87,6 +86,7 @@ export class ReportDetailComponent implements OnInit {
   private readonly apiErrors = inject(ApiErrorService);
   private readonly translate = inject(TranslateService);
   private readonly destroyRef = inject(DestroyRef);
+  protected readonly domainLabels = inject(DomainLabelService);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
@@ -94,12 +94,12 @@ export class ReportDetailComponent implements OnInit {
   readonly photos = signal<DisplayPhoto[]>([]);
   readonly lightboxUrl = signal<string | null>(null);
   readonly showWithdraw = signal(false);
-  readonly withdrawing = signal(false);
-  readonly withdrawError = signal<string | null>(null);
   readonly withdrawn = signal(false);
+  readonly actionFeedback = signal<ActionFeedbackState | null>(null);
   readonly catalogLoading = signal(false);
   readonly resubmitting = signal(false);
   readonly resubmitError = signal<string | null>(null);
+  readonly showResubmitEditor = signal(false);
   readonly fieldErrors = signal<Record<string, string[]>>({});
   readonly approvedClaimId = signal<string | null>(null);
 
@@ -107,15 +107,22 @@ export class ReportDetailComponent implements OnInit {
   readonly governorates = signal<{ code: string; sortOrder: number }[]>([]);
   readonly selectedCategory = signal<Category | null>(null);
   readonly selectedPhotos = signal<File[]>([]);
-
-  readonly withdrawForm = this.fb.nonNullable.group({
-    reason: ['' as WithdrawalReason | '', Validators.required],
-  });
+  readonly reportTitleMaxLength = REPORT_TITLE_MAX_LENGTH;
 
   readonly editForm = this.fb.nonNullable.group({
     categoryCode: ['', Validators.required],
-    title: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(80)]],
-    description: ['', [Validators.required, Validators.minLength(20), Validators.maxLength(1000)]],
+    title: [
+      '',
+      reportTitleValidators,
+    ],
+    description: [
+      '',
+      [
+        Validators.required,
+        Validators.minLength(20),
+        Validators.maxLength(1000),
+      ],
+    ],
     dateLostOrFound: ['', Validators.required],
     governorateCode: ['', Validators.required],
     areaText: ['', Validators.maxLength(120)],
@@ -124,13 +131,6 @@ export class ReportDetailComponent implements OnInit {
     rewardAmount: [null as number | null],
     categoryFields: this.fb.group({}),
   });
-
-  readonly withdrawalReasons: WithdrawalReason[] = [
-    'recovered_outside',
-    'no_longer_needed',
-    'posted_by_mistake',
-    'other',
-  ];
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -162,7 +162,7 @@ export class ReportDetailComponent implements OnInit {
   fieldLabel(fieldKey: string): string {
     const categoryCode = this.canEdit()
       ? this.editForm.controls.categoryCode.value
-      : this.report()?.categoryCode ?? '';
+      : (this.report()?.categoryCode ?? '');
     return this.catalogLabels.field(categoryCode, fieldKey);
   }
 
@@ -178,10 +178,6 @@ export class ReportDetailComponent implements OnInit {
     return this.translate.instant(code);
   }
 
-  withdrawalReasonLabel(reason: WithdrawalReason): string {
-    return this.translate.instant(`reports.withdraw.reasons.${reason}`);
-  }
-
   canWithdraw(): boolean {
     const status = this.report()?.status;
     return (
@@ -190,12 +186,21 @@ export class ReportDetailComponent implements OnInit {
     );
   }
 
-  withdrawBlockedByClaim(): boolean {
-    return this.report()?.status === 'claim_in_progress';
-  }
-
   canEdit(): boolean {
     return this.report()?.status === 'rejected';
+  }
+
+  async openResubmitEditor(): Promise<void> {
+    this.showResubmitEditor.set(true);
+    if (this.categories().length === 0 && !this.catalogLoading()) {
+      await this.loadCatalog();
+    }
+  }
+
+  closeResubmitEditor(): void {
+    this.showResubmitEditor.set(false);
+    this.resubmitError.set(null);
+    this.fieldErrors.set({});
   }
 
   showClaimsSection(): boolean {
@@ -261,7 +266,9 @@ export class ReportDetailComponent implements OnInit {
   }
 
   categoryFieldError(fieldKey: string): string | null {
-    return this.fieldError(fieldKey) ?? this.fieldError(`categoryFields.${fieldKey}`);
+    return (
+      this.fieldError(fieldKey) ?? this.fieldError(`categoryFields.${fieldKey}`)
+    );
   }
 
   photosFieldError(): string | null {
@@ -292,40 +299,27 @@ export class ReportDetailComponent implements OnInit {
   }
 
   openWithdraw(): void {
-    this.withdrawError.set(null);
     this.showWithdraw.set(true);
   }
 
   closeWithdraw(): void {
     this.showWithdraw.set(false);
-    this.withdrawError.set(null);
-    this.withdrawForm.reset();
   }
 
-  async confirmWithdraw(): Promise<void> {
-    const report = this.report();
-    if (!report || this.withdrawForm.invalid) {
-      return;
-    }
+  onWithdrawn(): void {
+    this.withdrawn.set(true);
+    this.showWithdraw.set(false);
+    this.actionFeedback.set({
+      title: this.translate.instant('common.dialog.done_title'),
+      message: this.translate.instant('reports.withdraw.done'),
+      onClosed: () => void this.router.navigate(['/my/reports']),
+    });
+  }
 
-    this.withdrawing.set(true);
-    this.withdrawError.set(null);
-
-    try {
-      await firstValueFrom(
-        this.reportService.withdraw(report.id, {
-          reason: this.withdrawForm.controls.reason.value as WithdrawalReason,
-        }),
-      );
-      this.withdrawn.set(true);
-      this.showWithdraw.set(false);
-      this.withdrawForm.reset();
-      await this.router.navigate(['/my/reports']);
-    } catch (error) {
-      this.withdrawError.set(this.apiErrors.messageFromHttpError(error));
-    } finally {
-      this.withdrawing.set(false);
-    }
+  closeActionFeedback(): void {
+    const feedback = this.actionFeedback();
+    this.actionFeedback.set(null);
+    feedback?.onClosed?.();
   }
 
   async resubmit(): Promise<void> {
@@ -342,7 +336,10 @@ export class ReportDetailComponent implements OnInit {
     this.resubmitError.set(null);
     this.fieldErrors.set({});
 
-    const request = buildUpdateReportRequest(report.type, this.editForm.getRawValue());
+    const request = buildUpdateReportRequest(
+      report.type,
+      this.editForm.getRawValue(),
+    );
 
     try {
       await firstValueFrom(
@@ -376,16 +373,11 @@ export class ReportDetailComponent implements OnInit {
       const report = await firstValueFrom(this.reportService.getById(id));
       this.report.set(report);
       this.approvedClaimId.set(
-        await loadReporterApprovedClaimId(
-          this.claimService,
-          id,
-          report.status,
-        ),
+        await loadReporterApprovedClaimId(this.claimService, id, report.status),
       );
       this.loading.set(false);
 
       if (report.status === 'rejected') {
-        await this.loadCatalog();
         this.populateEditForm(report);
       }
 
@@ -454,7 +446,8 @@ export class ReportDetailComponent implements OnInit {
     code: string,
     existingValues: Record<string, string> = {},
   ): void {
-    const category = this.categories().find((item) => item.code === code) ?? null;
+    const category =
+      this.categories().find((item) => item.code === code) ?? null;
     this.selectedCategory.set(category);
     this.editForm.setControl(
       'categoryFields',
@@ -480,8 +473,10 @@ export class ReportDetailComponent implements OnInit {
   private async loadPhotos(report: ReportDetail): Promise<void> {
     const displayPhotos = initialDisplayPhotos(report.photos);
     this.photos.set(displayPhotos);
-    await loadDisplayPhotos(displayPhotos, this.uploadService, (photoId, patch) =>
-      this.updatePhoto(photoId, patch),
+    await loadDisplayPhotos(
+      displayPhotos,
+      this.uploadService,
+      (photoId, patch) => this.updatePhoto(photoId, patch),
     );
   }
 
