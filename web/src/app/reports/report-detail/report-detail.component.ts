@@ -196,6 +196,8 @@ export class ReportDetailComponent implements OnInit {
       await this.loadCatalog();
     }
 
+    // Category answers are applied on load, before the catalog exists, so the
+    // field group is empty until the editor opens and definitions are known.
     this.restoreRejectedCategoryFields();
   }
 
