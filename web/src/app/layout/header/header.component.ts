@@ -12,6 +12,7 @@ import { firstValueFrom } from 'rxjs';
 
 import { AuthService } from '../../auth/auth.service';
 import { NotificationService } from '../../notifications/notification.service';
+import { ClaimService } from '../../claims/claim.service';
 import { BadgeComponent } from '../../shared/ui/badge/badge.component';
 import { ButtonComponent } from '../../shared/ui/button/button.component';
 import { IconComponent } from '../../shared/ui/icon/icon.component';
@@ -35,6 +36,7 @@ import { LogoMarkComponent } from '../../shared/ui/logo-mark/logo-mark.component
 export class HeaderComponent implements OnInit {
   readonly auth = inject(AuthService);
   readonly notifications = inject(NotificationService);
+  readonly claims = inject(ClaimService);
   readonly loggingOut = signal(false);
   readonly mobileNavOpen = signal(false);
   readonly userMenuOpen = signal(false);
@@ -60,7 +62,7 @@ export class HeaderComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    void this.notifications.refreshUnreadCount();
+    void this.claims.refreshPendingInboxCount();
   }
 
   toggleMobileNav(): void {
@@ -95,6 +97,7 @@ export class HeaderComponent implements OnInit {
     }
 
     this.notifications.clearUnreadCount();
+    this.claims.pendingInboxCount.set(0);
     await this.router.navigate(['/']);
     this.loggingOut.set(false);
   }

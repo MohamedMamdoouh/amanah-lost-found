@@ -1,15 +1,17 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { inject, Injectable, signal } from '@angular/core';
+import { firstValueFrom, Observable, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
+import { AuthService } from '../auth/auth.service';
 import { environment } from '../../environments/environment';
 import { PaginatedResponse } from '../shared/models/pagination.models';
 import {
   ClaimDetail,
-  ClaimSubmitEligibility,
+  IncomingClaimInboxItem,
   MyClaimSummary,
   ReportClaimSummary,
+  ClaimSubmitEligibility,
   SubmitClaimRequest,
   SubmitClaimResponse,
 } from './models/claim.models';
@@ -17,6 +19,23 @@ import {
 @Injectable({ providedIn: 'root' })
 export class ClaimService {
   private readonly http = inject(HttpClient);
+  private readonly auth = inject(AuthService);
+
+  readonly pendingInboxCount = signal(0);
+
+  async refreshPendingInboxCount(): Promise<void> {
+    if (!this.auth.isLoggedIn() || this.auth.isAdmin()) {
+      this.pendingInboxCount.set(0);
+      return;
+    }
+
+    try {
+      const response = await firstValueFrom(this.getInbox(1, 1));
+      this.pendingInboxCount.set(response.totalCount);
+    } catch {
+      this.pendingInboxCount.set(0);
+    }
+  }
 
   getSubmitEligibility(reportId: string): Observable<ClaimSubmitEligibility> {
     return this.http.get<ClaimSubmitEligibility>(
@@ -49,6 +68,20 @@ export class ClaimService {
 
     return this.http.get<PaginatedResponse<MyClaimSummary>>(
       `${environment.apiBaseUrl}/claims/mine`,
+      { params },
+    );
+  }
+
+  getInbox(
+    page = 1,
+    pageSize = 20,
+  ): Observable<PaginatedResponse<IncomingClaimInboxItem>> {
+    const params = new HttpParams()
+      .set('page', page)
+      .set('pageSize', pageSize);
+
+    return this.http.get<PaginatedResponse<IncomingClaimInboxItem>>(
+      `${environment.apiBaseUrl}/claims/inbox`,
       { params },
     );
   }

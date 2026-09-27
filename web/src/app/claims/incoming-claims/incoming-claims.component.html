@@ -1,0 +1,37 @@
+<section class="incoming-claims page-container" aria-labelledby="incoming-claims-title">
+  <app-page-header
+    [title]="'claims.incoming.title' | translate"
+    [intro]="'claims.incoming.intro' | translate"
+  />
+
+  @if (loading()) {
+    <app-loading-indicator [label]="'claims.incoming.loading' | translate" />
+  } @else if (error()) {
+    <app-alert variant="error">{{ error() }}</app-alert>
+  } @else if (items().length === 0) {
+    <app-empty-state [title]="'claims.incoming.empty' | translate">
+      <app-button variant="primary" [routerLink]="'/my/reports'">
+        {{ "claims.incoming.view_reports" | translate }}
+      </app-button>
+    </app-empty-state>
+  } @else {
+    <ul class="incoming-claims__list">
+      @for (item of items(); track item.id) {
+        <li class="incoming-claims__item">
+          <app-listing-card
+            [title]="item.reportTitle"
+            [reportType]="item.reportType"
+            [subtitle]="subtitle(item)"
+            subtitleIcon="person"
+            [date]="(item.submittedAt | appDate) ?? ''"
+            [badgeLabel]="domainLabels.claimStatus(item.status)"
+            [badgeVariant]="domainLabels.claimBadgeVariant(item.status)"
+            [routerLink]="reviewLink(item)"
+            [fragment]="'claims-section'"
+            [actionLabel]="'claims.incoming.review' | translate"
+          />
+        </li>
+      }
+    </ul>
+  }
+</section>

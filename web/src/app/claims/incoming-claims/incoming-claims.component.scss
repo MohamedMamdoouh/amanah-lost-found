@@ -1,0 +1,11 @@
+.incoming-claims__list {
+  display: grid;
+  gap: var(--space-md);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.incoming-claims__item {
+  display: grid;
+}

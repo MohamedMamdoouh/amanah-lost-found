@@ -12,10 +12,15 @@ import { firstValueFrom } from 'rxjs';
 
 import { ApiErrorService } from '../../i18n/api-error.service';
 import { DomainLabelService } from '../../i18n/domain-label.service';
+import {
+  ActionFeedbackDialogComponent,
+  ActionFeedbackState,
+} from '../../shared/ui/action-feedback-dialog/action-feedback-dialog.component';
 import { ConfirmDialogComponent } from '../../shared/ui/confirm-dialog/confirm-dialog.component';
 import { AlertComponent } from '../../shared/ui/alert/alert.component';
 import { BadgeComponent } from '../../shared/ui/badge/badge.component';
 import { ButtonComponent } from '../../shared/ui/button/button.component';
+import { IconComponent } from '../../shared/ui/icon/icon.component';
 import { LoadingIndicatorComponent } from '../../shared/ui/loading-indicator/loading-indicator.component';
 import { SpinnerComponent } from '../../shared/ui/spinner/spinner.component';
 import { ClaimPhotoUploadService } from '../../uploads/claim-photo-upload.service';
@@ -35,6 +40,8 @@ interface ClaimPhotoState {
     AlertComponent,
     BadgeComponent,
     ButtonComponent,
+    IconComponent,
+    ActionFeedbackDialogComponent,
     ConfirmDialogComponent,
     LoadingIndicatorComponent,
     SpinnerComponent,
@@ -63,6 +70,7 @@ export class ReportClaimsSectionComponent implements OnInit {
   readonly actingClaimId = signal<string | null>(null);
   readonly confirmApproveId = signal<string | null>(null);
   readonly confirmRejectId = signal<string | null>(null);
+  readonly actionFeedback = signal<ActionFeedbackState | null>(null);
 
   ngOnInit(): void {
     void this.loadClaims();
@@ -70,6 +78,10 @@ export class ReportClaimsSectionComponent implements OnInit {
 
   canActOn(claim: ReportClaimSummary): boolean {
     return this.canReview() && claim.status === 'pending';
+  }
+
+  pendingCount(): number {
+    return this.claims().filter((claim) => claim.status === 'pending').length;
   }
 
   photoState(claimId: string): ClaimPhotoState | null {
@@ -99,7 +111,11 @@ export class ReportClaimsSectionComponent implements OnInit {
       return;
     }
 
-    await this.runAction(claimId, () => this.claimService.approve(claimId));
+    await this.runAction(
+      claimId,
+      () => this.claimService.approve(claimId),
+      'claims.review.approve_done',
+    );
     this.closeDialogs();
   }
 
@@ -109,13 +125,24 @@ export class ReportClaimsSectionComponent implements OnInit {
       return;
     }
 
-    await this.runAction(claimId, () => this.claimService.reject(claimId));
+    await this.runAction(
+      claimId,
+      () => this.claimService.reject(claimId),
+      'claims.review.reject_done',
+    );
     this.closeDialogs();
+  }
+
+  closeActionFeedback(): void {
+    const feedback = this.actionFeedback();
+    this.actionFeedback.set(null);
+    feedback?.onClosed?.();
   }
 
   private async runAction(
     claimId: string,
     action: () => ReturnType<ClaimService['approve']>,
+    doneMessageKey: string,
   ): Promise<void> {
     if (this.actingClaimId()) {
       return;
@@ -128,6 +155,11 @@ export class ReportClaimsSectionComponent implements OnInit {
       await firstValueFrom(action());
       this.reviewed.emit();
       await this.loadClaims();
+      void this.claimService.refreshPendingInboxCount();
+      this.actionFeedback.set({
+        title: this.translate.instant('common.dialog.done_title'),
+        message: this.translate.instant(doneMessageKey),
+      });
     } catch (error) {
       this.actionError.set(
         this.apiErrors.messageFromHttpError(error, {

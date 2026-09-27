@@ -29,19 +29,28 @@
         {{ "nav.browse" | translate }}
       </a>
       <a
+        routerLink="/guide"
+        class="header__link"
+        routerLinkActive="header__link--active"
+      >
+        {{ "nav.guide" | translate }}
+      </a>
+      <a
         routerLink="/safety"
         class="header__link"
         routerLinkActive="header__link--active"
       >
         {{ "footer.safety" | translate }}
       </a>
-      <a
-        routerLink="/support"
-        class="header__link"
-        routerLinkActive="header__link--active"
-      >
-        {{ "footer.support" | translate }}
-      </a>
+      @if (!auth.isAdmin()) {
+        <a
+          routerLink="/support"
+          class="header__link"
+          routerLinkActive="header__link--active"
+        >
+          {{ "footer.support" | translate }}
+        </a>
+      }
     </nav>
 
     <div class="header__actions">
@@ -66,7 +75,11 @@
             />
           </button>
           @if (userMenuOpen()) {
-            <div class="header__user-panel" role="menu" (click)="$event.stopPropagation()">
+            <div
+              class="header__user-panel"
+              role="menu"
+              (click)="$event.stopPropagation()"
+            >
               @if (!auth.isAdmin()) {
                 <a
                   role="menuitem"
@@ -76,6 +89,20 @@
                   (click)="closeUserMenu()"
                 >
                   {{ "nav.my_reports" | translate }}
+                </a>
+                <a
+                  role="menuitem"
+                  routerLink="/my/incoming-claims"
+                  class="header__user-link header__user-link--with-badge"
+                  routerLinkActive="header__user-link--active"
+                  (click)="closeUserMenu()"
+                >
+                  {{ "nav.incoming_claims" | translate }}
+                  @if (claims.pendingInboxCount() > 0) {
+                    <app-badge variant="neutral" [dot]="true">{{
+                      claims.pendingInboxCount()
+                    }}</app-badge>
+                  }
                 </a>
                 <a
                   role="menuitem"
@@ -186,19 +213,29 @@
       {{ "nav.browse" | translate }}
     </a>
     <a
+      routerLink="/guide"
+      class="header__drawer-link"
+      routerLinkActive="header__drawer-link--active"
+      (click)="closeMobileNav()"
+    >
+      {{ "nav.guide" | translate }}
+    </a>
+    <a
       routerLink="/safety"
       class="header__drawer-link"
       (click)="closeMobileNav()"
     >
       {{ "footer.safety" | translate }}
     </a>
-    <a
-      routerLink="/support"
-      class="header__drawer-link"
-      (click)="closeMobileNav()"
-    >
-      {{ "footer.support" | translate }}
-    </a>
+    @if (!auth.isAdmin()) {
+      <a
+        routerLink="/support"
+        class="header__drawer-link"
+        (click)="closeMobileNav()"
+      >
+        {{ "footer.support" | translate }}
+      </a>
+    }
     @if (auth.isLoggedIn()) {
       <span class="header__drawer-user">{{
         auth.currentUser()?.displayName
@@ -210,6 +247,18 @@
           (click)="closeMobileNav()"
         >
           {{ "nav.my_reports" | translate }}
+        </a>
+        <a
+          routerLink="/my/incoming-claims"
+          class="header__drawer-link header__drawer-link--with-badge"
+          (click)="closeMobileNav()"
+        >
+          {{ "nav.incoming_claims" | translate }}
+          @if (claims.pendingInboxCount() > 0) {
+            <app-badge variant="neutral" [dot]="true">{{
+              claims.pendingInboxCount()
+            }}</app-badge>
+          }
         </a>
         <a
           routerLink="/my/claims"

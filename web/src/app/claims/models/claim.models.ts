@@ -31,6 +31,17 @@ export interface MyClaimSummary {
   reporterDisplayName: string;
 }
 
+export interface IncomingClaimInboxItem {
+  id: string;
+  status: ClaimStatus;
+  submittedAt: string;
+  attemptNumber: number;
+  reportId: string;
+  reportType: 'lost' | 'found';
+  reportTitle: string;
+  claimantDisplayName: string;
+}
+
 export interface ReportClaimSummary {
   id: string;
   status: ClaimStatus;
