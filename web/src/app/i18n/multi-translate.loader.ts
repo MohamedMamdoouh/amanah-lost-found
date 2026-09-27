@@ -8,6 +8,7 @@ const translationFiles = [
   'governorates',
   'errors',
   'rejection-reasons',
+  'admin-analytics',
   'admin-moderation',
   'admin-categories',
   'admin-users',

@@ -8,10 +8,40 @@
       [attr.aria-label]="'admin.title' | translate"
     >
       <a
+        routerLink="/admin/overview"
+        routerLinkActive="admin-shell__route--active"
+        class="admin-shell__route"
+      >
+        <span class="admin-shell__route-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+            <path d="M3 3v18h18" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M7 14l4-4 3 3 5-6" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </span>
+        <span class="admin-shell__route-label">{{
+          "admin.nav.overview" | translate
+        }}</span>
+      </a>
+      <a
         routerLink="/admin/moderation"
         routerLinkActive="admin-shell__route--active"
         class="admin-shell__route"
       >
+        <span class="admin-shell__route-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+            <path
+              d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+            <path
+              d="M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v0a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2z"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+            <path d="M9 12h6M9 16h4" stroke-linecap="round" />
+          </svg>
+        </span>
         <span class="admin-shell__route-label">{{
           "admin.nav.moderation" | translate
         }}</span>
@@ -21,6 +51,16 @@
         routerLinkActive="admin-shell__route--active"
         class="admin-shell__route"
       >
+        <span class="admin-shell__route-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+            <path
+              d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+            <path d="M4 22v-7" stroke-linecap="round" />
+          </svg>
+        </span>
         <span class="admin-shell__route-label">{{
           "admin.nav.abuse" | translate
         }}</span>
@@ -30,6 +70,21 @@
         routerLinkActive="admin-shell__route--active"
         class="admin-shell__route"
       >
+        <span class="admin-shell__route-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+            <path
+              d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+            <circle cx="9" cy="7" r="4" />
+            <path
+              d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </span>
         <span class="admin-shell__route-label">{{
           "admin.nav.users" | translate
         }}</span>
@@ -39,11 +94,21 @@
         routerLinkActive="admin-shell__route--active"
         class="admin-shell__route"
       >
+        <span class="admin-shell__route-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+            <rect x="3" y="3" width="7" height="7" rx="1" stroke-linecap="round" />
+            <rect x="14" y="3" width="7" height="7" rx="1" stroke-linecap="round" />
+            <rect x="3" y="14" width="7" height="7" rx="1" stroke-linecap="round" />
+            <rect x="14" y="14" width="7" height="7" rx="1" stroke-linecap="round" />
+          </svg>
+        </span>
         <span class="admin-shell__route-label">{{
           "admin.nav.categories" | translate
         }}</span>
       </a>
     </nav>
   </header>
-  <router-outlet />
+  <div class="admin-shell__workspace">
+    <router-outlet />
+  </div>
 </section>

@@ -1,0 +1,255 @@
+<section
+  class="admin-page admin-overview"
+  aria-labelledby="admin-overview-title"
+>
+  <div class="admin-page__head">
+    <app-page-header
+      [title]="'admin.analytics.title' | translate"
+      [intro]="'admin.analytics.intro' | translate"
+    />
+  </div>
+
+  <div class="admin-page__body">
+    @if (loading()) {
+      <app-loading-indicator [label]="'admin.analytics.loading' | translate" />
+    } @else if (error()) {
+      <app-alert variant="error">{{ error() }}</app-alert>
+    } @else if (overview()) {
+      @if (overview(); as data) {
+        <section
+          class="admin-overview__section"
+          aria-labelledby="admin-analytics-impact"
+        >
+          <h2 id="admin-analytics-impact" class="admin-overview__heading">
+            {{ "admin.analytics.section.impact" | translate }}
+          </h2>
+          <ul class="admin-overview__grid admin-overview__grid--hero">
+            <li class="admin-overview__card admin-overview__card--hero">
+              <span class="admin-overview__value">{{
+                data.impact.reunionsResolved.lost +
+                  data.impact.reunionsResolved.found
+              }}</span>
+              <span class="admin-overview__label">{{
+                "admin.analytics.metric.reunions" | translate
+              }}</span>
+              <span class="admin-overview__hint">{{
+                "admin.analytics.metric.reunions_hint" | translate
+              }}</span>
+              <span class="admin-overview__sub">{{
+                lostFoundLabel(data.impact.reunionsResolved)
+              }}</span>
+            </li>
+            <li class="admin-overview__card admin-overview__card--hero">
+              <span class="admin-overview__value">{{
+                data.impact.livePublished.lost + data.impact.livePublished.found
+              }}</span>
+              <span class="admin-overview__label">{{
+                "admin.analytics.metric.live_published" | translate
+              }}</span>
+              <span class="admin-overview__hint">{{
+                "admin.analytics.metric.live_published_hint" | translate
+              }}</span>
+              <span class="admin-overview__sub">{{
+                lostFoundLabel(data.impact.livePublished)
+              }}</span>
+            </li>
+            <li class="admin-overview__card admin-overview__card--hero">
+              <span class="admin-overview__value">{{
+                data.impact.claimInProgress.lost +
+                  data.impact.claimInProgress.found
+              }}</span>
+              <span class="admin-overview__label">{{
+                "admin.analytics.metric.claim_in_progress" | translate
+              }}</span>
+              <span class="admin-overview__hint">{{
+                "admin.analytics.metric.claim_in_progress_hint" | translate
+              }}</span>
+              <span class="admin-overview__sub">{{
+                lostFoundLabel(data.impact.claimInProgress)
+              }}</span>
+            </li>
+          </ul>
+        </section>
+
+        <section
+          class="admin-overview__section"
+          aria-labelledby="admin-analytics-reports"
+        >
+          <h2 id="admin-analytics-reports" class="admin-overview__heading">
+            {{ "admin.analytics.section.reports" | translate }}
+          </h2>
+          <ul class="admin-overview__grid admin-overview__grid--reports">
+            <li class="admin-overview__card">
+              <span class="admin-overview__value">{{
+                data.reports.pendingReview
+              }}</span>
+              <span class="admin-overview__label">{{
+                "admin.analytics.metric.pending_review" | translate
+              }}</span>
+            </li>
+            <li class="admin-overview__card">
+              <span class="admin-overview__value">{{
+                data.reports.rejected
+              }}</span>
+              <span class="admin-overview__label">{{
+                "admin.analytics.metric.rejected" | translate
+              }}</span>
+            </li>
+            <li class="admin-overview__card">
+              <span class="admin-overview__value">{{
+                data.reports.withdrawn
+              }}</span>
+              <span class="admin-overview__label">{{
+                "admin.analytics.metric.withdrawn" | translate
+              }}</span>
+            </li>
+            <li class="admin-overview__card">
+              <span class="admin-overview__value">{{
+                data.reports.removedByAdmin
+              }}</span>
+              <span class="admin-overview__label">{{
+                "admin.analytics.metric.removed_by_admin" | translate
+              }}</span>
+            </li>
+            <li class="admin-overview__card admin-overview__card--emphasis">
+              <span class="admin-overview__value">{{ data.reports.all }}</span>
+              <span class="admin-overview__label">{{
+                "admin.analytics.metric.all_reports" | translate
+              }}</span>
+              <span class="admin-overview__sub">{{
+                lostFoundLabel(data.reports.allByType)
+              }}</span>
+            </li>
+          </ul>
+        </section>
+
+        <section
+          class="admin-overview__section"
+          aria-labelledby="admin-analytics-queues"
+        >
+          <h2 id="admin-analytics-queues" class="admin-overview__heading">
+            {{ "admin.analytics.section.queues" | translate }}
+          </h2>
+          <ul class="admin-overview__grid admin-overview__grid--queues">
+            <li class="admin-overview__card admin-overview__card--link">
+              <a class="admin-overview__link" routerLink="/admin/moderation">
+                <span class="admin-overview__value">{{
+                  data.queues.moderationPending
+                }}</span>
+                <span class="admin-overview__label">{{
+                  "admin.analytics.metric.moderation_pending" | translate
+                }}</span>
+                <span class="admin-overview__action">{{
+                  "admin.analytics.link.moderation" | translate
+                }}</span>
+              </a>
+            </li>
+            <li class="admin-overview__card admin-overview__card--link">
+              <a class="admin-overview__link" routerLink="/admin/abuse">
+                <span class="admin-overview__value">{{
+                  data.queues.openFlags
+                }}</span>
+                <span class="admin-overview__label">{{
+                  "admin.analytics.metric.open_flags" | translate
+                }}</span>
+                <span class="admin-overview__action">{{
+                  "admin.analytics.link.abuse" | translate
+                }}</span>
+              </a>
+            </li>
+            <li class="admin-overview__card">
+              <span class="admin-overview__value">{{
+                data.queues.pendingClaimsAwaitingReporter
+              }}</span>
+              <span class="admin-overview__label">{{
+                "admin.analytics.metric.pending_claims" | translate
+              }}</span>
+            </li>
+          </ul>
+        </section>
+
+        <section
+          class="admin-overview__section"
+          aria-labelledby="admin-analytics-abuse"
+        >
+          <h2 id="admin-analytics-abuse" class="admin-overview__heading">
+            {{ "admin.analytics.section.abuse" | translate }}
+          </h2>
+          <ul class="admin-overview__grid">
+            <li class="admin-overview__card">
+              <span class="admin-overview__value">{{
+                data.abuse.totalSubmitted
+              }}</span>
+              <span class="admin-overview__label">{{
+                "admin.analytics.metric.flags_total" | translate
+              }}</span>
+            </li>
+            <li class="admin-overview__card">
+              <span class="admin-overview__value">{{ data.abuse.open }}</span>
+              <span class="admin-overview__label">{{
+                "admin.analytics.metric.flags_open" | translate
+              }}</span>
+            </li>
+            <li class="admin-overview__card">
+              <span class="admin-overview__value">{{
+                data.abuse.resolvedNoAction
+              }}</span>
+              <span class="admin-overview__label">{{
+                "admin.analytics.metric.flags_no_action" | translate
+              }}</span>
+            </li>
+            <li class="admin-overview__card">
+              <span class="admin-overview__value">{{
+                data.abuse.resolvedTakedown
+              }}</span>
+              <span class="admin-overview__label">{{
+                "admin.analytics.metric.flags_takedown" | translate
+              }}</span>
+            </li>
+            <li class="admin-overview__card">
+              <span class="admin-overview__value">{{
+                data.abuse.resolvedBan
+              }}</span>
+              <span class="admin-overview__label">{{
+                "admin.analytics.metric.flags_ban" | translate
+              }}</span>
+            </li>
+          </ul>
+        </section>
+
+        <section
+          class="admin-overview__section"
+          aria-labelledby="admin-analytics-users"
+        >
+          <h2 id="admin-analytics-users" class="admin-overview__heading">
+            {{ "admin.analytics.section.users" | translate }}
+          </h2>
+          <ul class="admin-overview__grid admin-overview__grid--users">
+            <li class="admin-overview__card">
+              <span class="admin-overview__value">{{
+                data.users.registeredUsers
+              }}</span>
+              <span class="admin-overview__label">{{
+                "admin.analytics.metric.users_registered" | translate
+              }}</span>
+            </li>
+            <li class="admin-overview__card">
+              <span class="admin-overview__value">{{ data.users.banned }}</span>
+              <span class="admin-overview__label">{{
+                "admin.analytics.metric.users_banned" | translate
+              }}</span>
+            </li>
+            <li class="admin-overview__card">
+              <span class="admin-overview__value">{{
+                data.users.deactivated
+              }}</span>
+              <span class="admin-overview__label">{{
+                "admin.analytics.metric.users_deactivated" | translate
+              }}</span>
+            </li>
+          </ul>
+        </section>
+      }
+    }
+  </div>
+</section>

@@ -4,7 +4,7 @@
 }
 
 .admin-shell__header {
-  margin-bottom: var(--space-xl);
+  margin-bottom: var(--space-lg);
 }
 
 .admin-shell__title {
@@ -16,21 +16,30 @@
   color: var(--color-primary);
 }
 
-/* Ledger strip: four equal custody desks — mist tray, teal active rail */
+/* Work-queue tabs */
 .admin-shell__routes {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-sm);
-  padding: var(--space-sm);
-  background: color-mix(in srgb, var(--color-bg) 55%, var(--color-surface));
+  display: flex;
+  flex-wrap: nowrap;
+  gap: var(--space-xs);
+  padding: var(--space-xs);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
+  scrollbar-width: thin;
 }
 
 .admin-shell__route {
   display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  min-width: 7.5rem;
   min-height: var(--touch-min);
   padding: var(--space-sm) var(--space-md);
   text-decoration: none;
@@ -38,41 +47,49 @@
   background: transparent;
   border: 1px solid transparent;
   border-radius: var(--radius-md);
-  border-inline-start: 3px solid transparent;
   transition:
     color var(--transition-fast),
     background var(--transition-fast),
-    border-color var(--transition-fast),
-    box-shadow var(--transition-fast);
+    border-color var(--transition-fast);
+}
+
+.admin-shell__route-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  color: inherit;
+  opacity: 0.85;
+}
+
+.admin-shell__route-icon svg {
+  width: 1.25rem;
+  height: 1.25rem;
 }
 
 .admin-shell__route-label {
   font-family: var(--font-display);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   font-weight: 700;
   line-height: var(--line-height-tight);
+  text-align: center;
 }
 
 .admin-shell__route:hover {
   color: var(--color-primary);
-  background: var(--color-surface);
-  border-color: color-mix(
-    in srgb,
-    var(--color-primary) 18%,
-    var(--color-border)
-  );
+  background: color-mix(in srgb, var(--color-accent-soft) 55%, var(--color-surface));
+  border-color: color-mix(in srgb, var(--color-primary) 14%, var(--color-border));
 }
 
 .admin-shell__route--active {
   color: var(--color-primary);
-  background: var(--color-surface);
-  border-color: color-mix(
-    in srgb,
-    var(--color-primary) 22%,
-    var(--color-border)
-  );
-  border-inline-start-color: var(--color-primary);
-  box-shadow: var(--shadow-card);
+  background: color-mix(in srgb, var(--color-accent-soft) 70%, var(--color-surface));
+  border-color: color-mix(in srgb, var(--color-primary) 18%, var(--color-border));
+}
+
+.admin-shell__route--active .admin-shell__route-icon {
+  opacity: 1;
 }
 
 .admin-shell__route:focus-visible {
@@ -80,21 +97,17 @@
   outline-offset: 2px;
 }
 
-@media (min-width: 40rem) {
-  .admin-shell__routes {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+.admin-shell__workspace {
+  padding: var(--space-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
 }
 
-@media (min-width: 56rem) {
-  .admin-shell__routes {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: var(--space-xs);
-  }
-
-  .admin-shell__route {
-    justify-content: center;
-    text-align: center;
+@media (min-width: 48rem) {
+  .admin-shell__route-label {
+    font-size: var(--font-size-sm);
   }
 }
 

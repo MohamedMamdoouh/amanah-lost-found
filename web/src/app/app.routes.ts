@@ -1,5 +1,6 @@
 ﻿import { Routes } from '@angular/router';
 
+import { AdminOverviewComponent } from './admin/overview/admin-overview.component';
 import { AbuseDetailComponent } from './admin/abuse/abuse-detail.component';
 import { AbuseQueueComponent } from './admin/abuse/abuse-queue.component';
 import { AdminShellComponent } from './admin/admin-shell/admin-shell.component';
@@ -113,7 +114,8 @@ export const routes: Routes = [
         component: AdminShellComponent,
         canActivate: [adminGuard],
         children: [
-          { path: '', redirectTo: 'moderation', pathMatch: 'full' },
+          { path: '', redirectTo: 'overview', pathMatch: 'full' },
+          { path: 'overview', component: AdminOverviewComponent },
           { path: 'moderation', component: ModerationQueueComponent },
           { path: 'moderation/:id', component: ModerationReviewComponent },
           { path: 'abuse', component: AbuseQueueComponent },
