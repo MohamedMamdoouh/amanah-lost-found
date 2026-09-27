@@ -57,7 +57,7 @@ public class AuthSessionTests(ApiWebApplicationFactory factory) : IClassFixture<
         Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
         Assert.Equal(ErrorCodes.ValidationFailed, error?.Code);
         Assert.Contains(
-            "You must accept the terms and conditions and privacy policy.",
+            ErrorCodes.FieldAcceptTermsRequired,
             error?.Errors?["acceptTerms"] ?? []);
     }
 

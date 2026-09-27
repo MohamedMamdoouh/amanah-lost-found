@@ -19,7 +19,7 @@ public class AuthValidationTests(ApiWebApplicationFactory factory) : IClassFixtu
 
         Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
         Assert.Equal(ErrorCodes.ValidationFailed, error?.Code);
-        Assert.Contains("Phone number is required.", error?.Errors?["identifier"] ?? []);
+        Assert.Contains(ErrorCodes.FieldPhoneRequired, error?.Errors?["identifier"] ?? []);
     }
 
     [Fact]
@@ -51,7 +51,7 @@ public class AuthValidationTests(ApiWebApplicationFactory factory) : IClassFixtu
         Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
         Assert.Equal(ErrorCodes.ValidationFailed, error?.Code);
         Assert.Contains(
-            "You must accept the terms and conditions and privacy policy.",
+            ErrorCodes.FieldAcceptTermsRequired,
             error?.Errors?["acceptTerms"] ?? []);
         Assert.Null(session);
     }

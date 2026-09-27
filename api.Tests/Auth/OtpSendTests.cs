@@ -70,7 +70,7 @@ public class OtpSendTests(ApiWebApplicationFactory factory) : IClassFixture<ApiW
         Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
         Assert.Equal(ErrorCodes.ValidationFailed, error?.Code);
         Assert.Contains(
-            "Phone number format is not valid.",
+            ErrorCodes.FieldPhoneInvalid,
             error?.Errors?["identifier"] ?? []);
 
         Assert.Empty(context.SmsSender.SentMessages);

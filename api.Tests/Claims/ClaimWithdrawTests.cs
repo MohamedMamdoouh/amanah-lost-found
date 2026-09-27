@@ -56,7 +56,7 @@ public class ClaimWithdrawTests(ApiWebApplicationFactory factory) : IClassFixtur
                 item.UserId == context.Session.User.Id
                 && item.Type == "ClaimWithdrawnByClaimant");
         Assert.Equal("ClaimWithdrawnByClaimant", notification.Type);
-        Assert.Contains($"/my/reports/{reportId}", notification.PayloadJson, StringComparison.Ordinal);
+        Assert.Contains("/my/incoming-claims", notification.PayloadJson, StringComparison.Ordinal);
     }
 
     [Fact]

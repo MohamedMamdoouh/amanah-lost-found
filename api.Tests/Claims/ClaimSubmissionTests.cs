@@ -54,8 +54,7 @@ public class ClaimSubmissionTests(ApiWebApplicationFactory factory) : IClassFixt
                 item.UserId == context.Session.User.Id
                 && item.Type == "NewClaimSubmitted");
         Assert.Equal("NewClaimSubmitted", notification.Type);
-        Assert.Contains($"/my/reports/{reportId}", notification.PayloadJson, StringComparison.Ordinal);
-        Assert.Contains("#claims-section", notification.PayloadJson, StringComparison.Ordinal);
+        Assert.Contains("/my/incoming-claims", notification.PayloadJson, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -147,7 +146,7 @@ public class ClaimSubmissionTests(ApiWebApplicationFactory factory) : IClassFixt
         Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
         Assert.Equal(ErrorCodes.ValidationFailed, error?.Code);
         Assert.Contains(
-            ContactInfoDetector.ContactInfoMessage,
+            ErrorCodes.ClaimContactInfo,
             error!.Errors![ClaimContentValidator.FieldName]);
         Assert.Equal(0, await ClaimTestHelpers.CountClaimsAsync(context, reportId, claimantSession.User.Id));
     }

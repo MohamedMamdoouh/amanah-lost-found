@@ -61,7 +61,7 @@ public class ReportDateValidatorTests
         var error = ReportDateValidator.ValidateDateLostOrFound(Today.AddDays(1), Today);
 
         Assert.NotNull(error);
-        Assert.Contains("future", error, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(ErrorCodes.FieldReportDateFuture, error);
     }
 
     [Fact]
@@ -78,7 +78,7 @@ public class ReportDateValidatorTests
             Today);
 
         Assert.NotNull(error);
-        Assert.Contains("12 months", error, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(ErrorCodes.FieldReportDateTooOld, error);
     }
 }
 
@@ -382,7 +382,7 @@ public class ContactInfoValidatorTests
             new Dictionary<string, string>());
 
         Assert.Contains(ReportContentValidator.TitleField, errors.Keys);
-        Assert.Equal(ContactInfoDetector.ContactInfoMessage, errors[ReportContentValidator.TitleField][0]);
+        Assert.Equal(ErrorCodes.ReportContactInfo, errors[ReportContentValidator.TitleField][0]);
     }
 
     [Fact]

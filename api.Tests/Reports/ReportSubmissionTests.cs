@@ -77,7 +77,7 @@ public class ReportSubmissionTests(ApiWebApplicationFactory factory) : IClassFix
 
         Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
         Assert.Contains(
-            ContactInfoDetector.ContactInfoMessage,
+            ErrorCodes.ReportContactInfo,
             error!.Errors![ReportContentValidator.TitleField]);
     }
 

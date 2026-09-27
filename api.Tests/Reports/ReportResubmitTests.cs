@@ -142,7 +142,7 @@ public class ReportResubmitTests(ApiWebApplicationFactory factory) : IClassFixtu
 
         Assert.Equal(HttpStatusCode.BadRequest, resubmitResponse.StatusCode);
         Assert.Contains(
-            ContactInfoDetector.ContactInfoMessage,
+            ErrorCodes.ReportContactInfo,
             error!.Errors![ReportContentValidator.TitleField]);
     }
 
