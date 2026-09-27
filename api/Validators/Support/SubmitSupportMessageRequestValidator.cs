@@ -1,5 +1,6 @@
 using Amanah.Api.Services.Auth;
 using Amanah.Api.Utilities.Auth;
+using Amanah.Contracts.Errors;
 using Amanah.Contracts.Requests.Support;
 using FluentValidation;
 
@@ -14,26 +15,26 @@ public sealed class SubmitSupportMessageRequestValidator : AbstractValidator<Sub
     {
         RuleFor(request => request.DisplayName)
             .NotEmpty()
-            .WithMessage("Display name is required.")
+            .WithMessage(ErrorCodes.FieldDisplayNameRequired)
             .Must(DisplayNameValidator.IsValid)
-            .WithMessage("Display name must be 3 to 40 characters using letters, numbers, spaces, or - _ .");
+            .WithMessage(ErrorCodes.FieldDisplayNameInvalid);
 
         RuleFor(request => request.ReplyEmail)
             .NotEmpty()
-            .WithMessage("Reply email is required.")
+            .WithMessage(ErrorCodes.FieldReplyEmailRequired)
             .Must(email => EmailNormalizer.TryNormalize(email, out _))
-            .WithMessage("Email format is not valid.");
+            .WithMessage(ErrorCodes.FieldReplyEmailInvalid);
 
         RuleFor(request => request.Message)
             .NotEmpty()
-            .WithMessage("Message is required.")
+            .WithMessage(ErrorCodes.FieldSupportMessageRequired)
             .MinimumLength(MessageMinLength)
-            .WithMessage($"Message must be at least {MessageMinLength} characters.")
+            .WithMessage(ErrorCodes.FieldSupportMessageInvalid)
             .MaximumLength(MessageMaxLength)
-            .WithMessage($"Message must be at most {MessageMaxLength} characters.");
+            .WithMessage(ErrorCodes.FieldSupportMessageInvalid);
 
         RuleFor(request => request.CaptchaToken)
             .NotEmpty()
-            .WithMessage("Captcha verification is required.");
+            .WithMessage(ErrorCodes.FieldCaptchaTokenRequired);
     }
 }

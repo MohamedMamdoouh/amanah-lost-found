@@ -1,4 +1,5 @@
 using Amanah.Api.Utilities.Reports;
+using Amanah.Contracts.Errors;
 using Amanah.Contracts.Requests.Admin;
 using FluentValidation;
 
@@ -10,13 +11,13 @@ public sealed class RejectReportRequestValidator : AbstractValidator<RejectRepor
     {
         RuleFor(request => request.ReasonCode)
             .NotEmpty()
-            .WithMessage("Rejection reason is required.")
+            .WithMessage(ErrorCodes.FieldAdminRejectionReasonRequired)
             .Must(RejectionReasonCodes.All.Contains)
-            .WithMessage("Rejection reason is invalid.");
+            .WithMessage(ErrorCodes.FieldAdminRejectionReasonInvalid);
 
         RuleFor(request => request.Note)
             .MaximumLength(500)
             .When(request => request.Note is not null)
-            .WithMessage("Rejection note must be at most 500 characters.");
+            .WithMessage(ErrorCodes.FieldAdminRejectionNoteTooLong);
     }
 }

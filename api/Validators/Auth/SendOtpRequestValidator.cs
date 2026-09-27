@@ -1,4 +1,5 @@
 using Amanah.Api.Services.Auth;
+using Amanah.Contracts.Errors;
 using Amanah.Contracts.Requests.Auth;
 using FluentValidation;
 
@@ -16,37 +17,37 @@ public sealed class SendOtpRequestValidator : AbstractValidator<SendOtpRequest>
     {
         RuleFor(request => request.Channel)
             .NotEmpty()
-            .WithMessage("Sign-in channel is required.")
+            .WithMessage(ErrorCodes.FieldSignInChannelRequired)
             .Must(channel => AuthIdentifierNormalizer.TryParseChannel(channel, out _))
-            .WithMessage("Sign-in channel must be phone or email.");
+            .WithMessage(ErrorCodes.FieldSignInChannelInvalid);
 
         When(request => IsChannel(request, AuthIdentifierChannel.Phone), () =>
         {
             RuleFor(request => request.Identifier)
                 .NotEmpty()
-                .WithMessage("Phone number is required.")
+                .WithMessage(ErrorCodes.FieldPhoneRequired)
                 .Must(identifier => PhoneNormalizer.TryNormalize(identifier, out _))
-                .WithMessage("Phone number format is not valid.");
+                .WithMessage(ErrorCodes.FieldPhoneInvalid);
         });
 
         When(request => IsChannel(request, AuthIdentifierChannel.Email), () =>
         {
             RuleFor(request => request.Identifier)
                 .NotEmpty()
-                .WithMessage("Email address is required.")
+                .WithMessage(ErrorCodes.FieldEmailRequired)
                 .Must(identifier => EmailNormalizer.TryNormalize(identifier, out _))
-                .WithMessage("Email format is not valid.");
+                .WithMessage(ErrorCodes.FieldEmailInvalid);
         });
 
         RuleFor(request => request.CaptchaToken)
             .NotEmpty()
-            .WithMessage("Captcha verification is required.");
+            .WithMessage(ErrorCodes.FieldCaptchaTokenRequired);
 
         RuleFor(request => request.Purpose)
             .NotEmpty()
-            .WithMessage("OTP purpose is required.")
+            .WithMessage(ErrorCodes.FieldOtpPurposeRequired)
             .Must(AllowedPurposes.Contains)
-            .WithMessage("OTP purpose is not valid.");
+            .WithMessage(ErrorCodes.FieldOtpPurposeInvalid);
     }
 
     private static bool IsChannel(SendOtpRequest request, AuthIdentifierChannel expected) =>

@@ -1,4 +1,5 @@
 using Amanah.Api.Utilities.Auth;
+using Amanah.Contracts.Errors;
 using Amanah.Contracts.Requests.Auth;
 using FluentValidation;
 
@@ -10,12 +11,12 @@ public sealed class ResetPasswordRequestValidator : AbstractValidator<ResetPassw
     {
         RuleFor(request => request.ResetToken)
             .NotEmpty()
-            .WithMessage("Reset token is required.");
+            .WithMessage(ErrorCodes.FieldResetTokenRequired);
 
         RuleFor(request => request.Password)
             .NotEmpty()
-            .WithMessage("Password is required.")
+            .WithMessage(ErrorCodes.FieldPasswordRequired)
             .MinimumLength(PasswordRules.MinLength)
-            .WithMessage($"Password must be at least {PasswordRules.MinLength} characters.");
+            .WithMessage(ErrorCodes.FieldPasswordTooShort);
     }
 }

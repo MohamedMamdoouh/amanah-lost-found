@@ -1,4 +1,5 @@
 using Amanah.Api.Utilities.Abuse;
+using Amanah.Contracts.Errors;
 using Amanah.Contracts.Requests.Abuse;
 using FluentValidation;
 
@@ -10,13 +11,13 @@ public sealed class FlagListingRequestValidator : AbstractValidator<FlagListingR
     {
         RuleFor(request => request.Reason)
             .NotEmpty()
-            .WithMessage("Flag reason is required.")
+            .WithMessage(ErrorCodes.FieldAbuseReasonRequired)
             .Must(AbuseFlagReasons.All.Contains)
-            .WithMessage("Flag reason is invalid.");
+            .WithMessage(ErrorCodes.AbuseInvalidReason);
 
         RuleFor(request => request.Note)
             .MaximumLength(500)
             .When(request => request.Note is not null)
-            .WithMessage("Flag note must be at most 500 characters.");
+            .WithMessage(ErrorCodes.FieldAbuseNoteTooLong);
     }
 }

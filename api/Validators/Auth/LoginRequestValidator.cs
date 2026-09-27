@@ -1,4 +1,5 @@
 using Amanah.Api.Services.Auth;
+using Amanah.Contracts.Errors;
 using Amanah.Contracts.Requests.Auth;
 using FluentValidation;
 
@@ -10,31 +11,31 @@ public sealed class LoginRequestValidator : AbstractValidator<LoginRequest>
     {
         RuleFor(request => request.Channel)
             .NotEmpty()
-            .WithMessage("Sign-in channel is required.")
+            .WithMessage(ErrorCodes.FieldSignInChannelRequired)
             .Must(channel => AuthIdentifierNormalizer.TryParseChannel(channel, out _))
-            .WithMessage("Sign-in channel must be phone or email.");
+            .WithMessage(ErrorCodes.FieldSignInChannelInvalid);
 
         When(request => IsChannel(request, AuthIdentifierChannel.Phone), () =>
         {
             RuleFor(request => request.Identifier)
                 .NotEmpty()
-                .WithMessage("Phone number is required.")
+                .WithMessage(ErrorCodes.FieldPhoneRequired)
                 .Must(identifier => PhoneNormalizer.TryNormalize(identifier, out _))
-                .WithMessage("Phone number format is not valid.");
+                .WithMessage(ErrorCodes.FieldPhoneInvalid);
         });
 
         When(request => IsChannel(request, AuthIdentifierChannel.Email), () =>
         {
             RuleFor(request => request.Identifier)
                 .NotEmpty()
-                .WithMessage("Email address is required.")
+                .WithMessage(ErrorCodes.FieldEmailRequired)
                 .Must(identifier => EmailNormalizer.TryNormalize(identifier, out _))
-                .WithMessage("Email format is not valid.");
+                .WithMessage(ErrorCodes.FieldEmailInvalid);
         });
 
         RuleFor(request => request.Password)
             .NotEmpty()
-            .WithMessage("Password is required.");
+            .WithMessage(ErrorCodes.FieldPasswordRequired);
     }
 
     private static bool IsChannel(LoginRequest request, AuthIdentifierChannel expected) =>

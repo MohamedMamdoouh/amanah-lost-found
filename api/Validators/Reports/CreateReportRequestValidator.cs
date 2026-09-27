@@ -1,3 +1,4 @@
+using Amanah.Contracts.Errors;
 using Amanah.Contracts.Requests.Reports;
 using FluentValidation;
 
@@ -11,16 +12,16 @@ public sealed class CreateReportRequestValidator : AbstractValidator<CreateRepor
     {
         RuleFor(request => request.Type)
             .NotEmpty()
-            .WithMessage("Report type is required.")
+            .WithMessage(ErrorCodes.FieldReportTypeRequired)
             .Must(type => AllowedTypes.Contains(type, StringComparer.Ordinal))
-            .WithMessage("Report type must be lost or found.");
+            .WithMessage(ErrorCodes.FieldReportTypeInvalid);
 
         RuleFor(request => request.CategoryCode)
             .NotEmpty()
-            .WithMessage("Category is required.");
+            .WithMessage(ErrorCodes.FieldReportCategoryRequired);
 
         RuleFor(request => request.GovernorateCode)
             .NotEmpty()
-            .WithMessage("Governorate is required.");
+            .WithMessage(ErrorCodes.FieldReportGovernorateRequired);
     }
 }

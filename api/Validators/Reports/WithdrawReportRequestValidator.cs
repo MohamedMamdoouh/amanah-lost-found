@@ -1,3 +1,4 @@
+using Amanah.Contracts.Errors;
 using Amanah.Contracts.Requests.Reports;
 using FluentValidation;
 
@@ -17,6 +18,6 @@ public sealed class WithdrawReportRequestValidator : AbstractValidator<WithdrawR
     {
         RuleFor(request => request.Reason)
             .Must(reason => reason is null || AllowedReasons.Contains(reason, StringComparer.Ordinal))
-            .WithMessage("Withdrawal reason is invalid.");
+            .WithMessage(ErrorCodes.FieldReportWithdrawReasonInvalid);
     }
 }

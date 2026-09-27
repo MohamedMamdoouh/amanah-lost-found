@@ -1,4 +1,5 @@
 using Amanah.Api.Services.Auth;
+using Amanah.Contracts.Errors;
 using Amanah.Contracts.Requests.Account;
 using FluentValidation;
 
@@ -10,31 +11,31 @@ public sealed class SendLinkIdentifierOtpRequestValidator : AbstractValidator<Se
     {
         RuleFor(request => request.Channel)
             .NotEmpty()
-            .WithMessage("Sign-in channel is required.")
+            .WithMessage(ErrorCodes.FieldSignInChannelRequired)
             .Must(channel => AuthIdentifierNormalizer.TryParseChannel(channel, out _))
-            .WithMessage("Sign-in channel must be phone or email.");
+            .WithMessage(ErrorCodes.FieldSignInChannelInvalid);
 
         When(request => IsChannel(request, AuthIdentifierChannel.Phone), () =>
         {
             RuleFor(request => request.Identifier)
                 .NotEmpty()
-                .WithMessage("Phone number is required.")
+                .WithMessage(ErrorCodes.FieldPhoneRequired)
                 .Must(identifier => PhoneNormalizer.TryNormalize(identifier, out _))
-                .WithMessage("Phone number format is not valid.");
+                .WithMessage(ErrorCodes.FieldPhoneInvalid);
         });
 
         When(request => IsChannel(request, AuthIdentifierChannel.Email), () =>
         {
             RuleFor(request => request.Identifier)
                 .NotEmpty()
-                .WithMessage("Email address is required.")
+                .WithMessage(ErrorCodes.FieldEmailRequired)
                 .Must(identifier => EmailNormalizer.TryNormalize(identifier, out _))
-                .WithMessage("Email format is not valid.");
+                .WithMessage(ErrorCodes.FieldEmailInvalid);
         });
 
         RuleFor(request => request.CaptchaToken)
             .NotEmpty()
-            .WithMessage("Captcha verification is required.");
+            .WithMessage(ErrorCodes.FieldCaptchaTokenRequired);
     }
 
     private static bool IsChannel(SendLinkIdentifierOtpRequest request, AuthIdentifierChannel expected) =>
@@ -48,33 +49,33 @@ public sealed class VerifyLinkIdentifierOtpRequestValidator : AbstractValidator<
     {
         RuleFor(request => request.Channel)
             .NotEmpty()
-            .WithMessage("Sign-in channel is required.")
+            .WithMessage(ErrorCodes.FieldSignInChannelRequired)
             .Must(channel => AuthIdentifierNormalizer.TryParseChannel(channel, out _))
-            .WithMessage("Sign-in channel must be phone or email.");
+            .WithMessage(ErrorCodes.FieldSignInChannelInvalid);
 
         When(request => IsChannel(request, AuthIdentifierChannel.Phone), () =>
         {
             RuleFor(request => request.Identifier)
                 .NotEmpty()
-                .WithMessage("Phone number is required.")
+                .WithMessage(ErrorCodes.FieldPhoneRequired)
                 .Must(identifier => PhoneNormalizer.TryNormalize(identifier, out _))
-                .WithMessage("Phone number format is not valid.");
+                .WithMessage(ErrorCodes.FieldPhoneInvalid);
         });
 
         When(request => IsChannel(request, AuthIdentifierChannel.Email), () =>
         {
             RuleFor(request => request.Identifier)
                 .NotEmpty()
-                .WithMessage("Email address is required.")
+                .WithMessage(ErrorCodes.FieldEmailRequired)
                 .Must(identifier => EmailNormalizer.TryNormalize(identifier, out _))
-                .WithMessage("Email format is not valid.");
+                .WithMessage(ErrorCodes.FieldEmailInvalid);
         });
 
         RuleFor(request => request.Code)
             .NotEmpty()
-            .WithMessage("Verification code is required.")
+            .WithMessage(ErrorCodes.FieldOtpCodeRequired)
             .Must(code => OtpCodeNormalizer.TryNormalize(code, out _))
-            .WithMessage("Verification code format is not valid.");
+            .WithMessage(ErrorCodes.FieldOtpCodeInvalid);
     }
 
     private static bool IsChannel(VerifyLinkIdentifierOtpRequest request, AuthIdentifierChannel expected) =>
