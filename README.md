@@ -4,7 +4,7 @@
 
 **Live site:** [https://amanah-egh5.onrender.com](https://amanah-egh5.onrender.com)
 
-**Further reading:** [Product spec](specs/SPEC.md) · [API conventions](specs/00-api-conventions.md) · [Deployment](docs/deployment.md) · [Observability](docs/observability.md)
+**Further reading:** [Product spec](specs/SPEC.md) · [Specifications index](specs/README.md) · [API conventions](specs/00-api-conventions.md) · [Deployment](docs/deployment.md) · [Observability](docs/observability.md)
 
 ---
 
@@ -49,11 +49,12 @@
 - **Reports** — Lost and found submissions with category-specific fields, optional photos (EXIF strip, WebP), contact-info blocking, and quotas
 - **Moderation** — Admin FIFO queue (approve/reject), reporter resubmit for rejected reports, category and field CRUD, admin alert email (Brevo)
 - **Browse** — Public listing with search, filters, pagination, and status-aware detail pages (`/lost/{id}`, `/found/{id}`)
-- **Claims** — Submit and review ownership claims, presigned private claim photos, competing-claim handling, My Claims
+- **Claims** — Submit and review ownership claims, presigned private claim photos, competing-claim handling, My Claims, and reporter **incoming claims** inbox
 - **Chat & resolution** — SignalR live messaging with REST fallback, attachments, safety banner, confirm resolved / cancel claim
 - **Notifications** — In-app notification center with deep links
 - **Account** — Deactivation with blockers and reactivation
-- **Trust & safety** — Listing flags, admin abuse queue and investigation, user ban/unban, enforcement side effects
+- **Trust & safety** — Listing flags, admin abuse queue and investigation, user ban/unban, enforcement side effects, admin analytics overview
+- **Support** — Public contact form (Turnstile-gated) for help requests
 - **Lifecycle** — Background jobs for listing expiry, claim timeouts, retention, OTP/session cleanup, and orphaned storage sweeps
 - **Rate limiting** — OTP send, login, photo upload, and chat message policies (see `RateLimit` in [api/appsettings.json](api/appsettings.json))
 - **Observability** — Structured JSON logs in Production, correlation IDs, log-emitted metrics, split health endpoints ([docs/observability.md](docs/observability.md))
@@ -98,7 +99,7 @@ contracts/     Request/response types at the API boundary
 api.Tests/     Integration and unit tests
 ```
 
-In **Production**, one process serves the API and static files from `wwwroot` ([api/Extensions/DependencyInjection.cs](api/Extensions/DependencyInjection.cs)). There is no `.sln` file; build projects directly (for example `api/Amanah.Api.csproj`).
+In **Production**, one process serves the API and static files from `wwwroot` ([api/Extensions/DependencyInjection.cs](api/Extensions/DependencyInjection.cs)). Open [Amanah.slnx](Amanah.slnx) in the IDE, or build projects directly (for example `api/Amanah.Api.csproj`).
 
 ### Key patterns
 
@@ -250,7 +251,7 @@ Cors__AllowedOrigins__0=https://your-origin.example
 
 ### Turnstile site key (frontend)
 
-Set `turnstileSiteKey` in [web/src/environments/environment.production.ts](web/src/environments/environment.production.ts). It is a **public** widget key baked into the SPA at `ng build` time and must pair with `Turnstile__SecretKey` on the API.
+Set `turnstileSiteKey` in [web/src/environments/environment.production.ts](web/src/environments/environment.production.ts) (and [environment.development.ts](web/src/environments/environment.development.ts) for local builds). It is a **public** widget key baked into the SPA at `ng build` time and must pair with `Turnstile__SecretKey` on the API.
 
 ---
 
@@ -308,9 +309,10 @@ Response includes access token fields consumed by the Angular `AuthService`; ref
 | `GET` | `/api/v1/chats` | My chat threads |
 | `POST` | `/api/v1/chats/{threadId}/messages` | Send message (REST) |
 | `GET` | `/api/v1/notifications` | In-app notifications |
+| `POST` | `/api/v1/support/messages` | Public support message (captcha) |
 | `GET` | `/health`, `/health/ready` | Liveness / readiness |
 
-Admin routes (require admin role): `/api/v1/admin/moderation/*`, `/api/v1/admin/categories/*`, `/api/v1/admin/abuse/*`, `/api/v1/admin/users/*`, `/api/v1/admin/investigations/*`, `/api/v1/admin/reports/{id}/takedown`.
+Admin routes (require admin role): `/api/v1/admin/moderation/*`, `/api/v1/admin/categories/*`, `/api/v1/admin/abuse/*`, `/api/v1/admin/users/*`, `/api/v1/admin/investigations/*`, `/api/v1/admin/analytics/*`, `/api/v1/admin/reports/{id}/takedown`. Development only: `/api/v1/admin/test/run-job/{jobName}`.
 
 ### Realtime chat (SignalR)
 
@@ -320,10 +322,10 @@ Hub path: **`/hubs/chat`** ([contracts/Chats/ChatHubContract.cs](contracts/Chats
 
 | Area | Paths |
 | ---- | ----- |
-| Public | `/`, `/browse`, `/lost/{id}`, `/found/{id}`, `/terms`, `/privacy`, `/safety`, `/support` |
+| Public | `/`, `/browse`, `/lost/{id}`, `/found/{id}`, `/terms`, `/privacy`, `/guide`, `/safety`, `/support`, `/not-found`, `/unavailable` |
 | Auth | `/login`, `/account/reactivate` |
-| User | `/report/lost`, `/report/found`, `/my/reports`, `/my/claims`, `/my/chats`, `/notifications`, `/settings/account` |
-| Admin | `/admin/moderation`, `/admin/abuse`, `/admin/users`, `/admin/categories` |
+| User | `/report/lost`, `/report/found`, `/my/reports`, `/my/reports/{id}`, `/my/incoming-claims`, `/my/claims`, `/my/chats`, `/my/chats/{threadId}`, `/notifications`, `/settings/account` |
+| Admin | `/admin/overview`, `/admin/moderation`, `/admin/moderation/{id}`, `/admin/abuse`, `/admin/abuse/{id}`, `/admin/users`, `/admin/users/{id}`, `/admin/categories` |
 
 ---
 
@@ -345,7 +347,10 @@ Docker must be running. The web package has no `test` script in [web/package.jso
 
 ## Automation
 
-[`.github/workflows/keepalive.yml`](.github/workflows/keepalive.yml) runs on a schedule (every 10 minutes) and on manual dispatch. It pings `GET /health` on the configured origin to reduce Render free-tier spin-down. There is no separate build/test workflow in this repository.
+| Workflow | File | When | Purpose |
+| -------- | ---- | ---- | ------- |
+| **CI** | [`.github/workflows/ci.yml`](.github/workflows/ci.yml) | Push to `main`, all pull requests | `dotnet test` on `api.Tests` (Testcontainers; Docker on the runner), then Release build of the API and `npm ci` / `npm run build` for the SPA |
+| **Keepalive** | [`.github/workflows/keepalive.yml`](.github/workflows/keepalive.yml) | Cron every 10 minutes, manual dispatch | `GET /health` on the configured origin (default production URL) to reduce Render free-tier spin-down |
 
 ---
 
@@ -353,9 +358,11 @@ Docker must be running. The web package has no `test` script in [web/package.jso
 
 ```text
 Amanah/
+├── Amanah.slnx                # Solution (api, contracts, api.Tests)
 ├── api/
 │   ├── Controllers/           # Versioned REST API
 │   ├── Services/              # Domain/feature services (reports, claims, chat, moderation, …)
+│   ├── Hubs/                  # SignalR (chat)
 │   ├── Data/                  # AppDbContext, configurations, migrations, seeds
 │   ├── Auth/                  # JWT, refresh cookie, authorization policies
 │   ├── Extensions/            # DI composition, pipeline, SignalR
@@ -367,12 +374,13 @@ Amanah/
 ├── web/
 │   ├── src/app/               # Feature modules (auth, browse, reports, claims, chats, admin, …)
 │   ├── src/assets/i18n/ar/    # Arabic translations (incl. error codes)
-│   ├── src/environments/      # API base URL, Turnstile site key (production)
+│   ├── src/environments/      # apiBaseUrl, Turnstile site key (dev / production)
 │   └── proxy.conf.json        # Dev proxy to API
 ├── contracts/                 # Shared DTOs and SignalR contract constants
 ├── api.Tests/                 # Integration and unit tests
-├── specs/                     # Product spec and feature notes
+├── specs/                     # Product spec, feature specs, build status table
 ├── docs/                      # deployment.md, observability.md
+├── .github/workflows/         # ci.yml, keepalive.yml
 ├── Directory.Build.props
 ├── Directory.Packages.props
 └── .env.example
