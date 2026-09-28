@@ -128,6 +128,7 @@ public static class ErrorCodes
     public const string AccountReactivationRequired = "account.reactivation_required";
     public const string AccountBlockerClaimInProgress = "claim_in_progress";
     public const string AccountBlockerApprovedClaim = "approved_claim";
+    public const string AccountBlockerAdminRole = "admin_role";
 
     public const string AbuseDuplicateFlag = "abuse.duplicate_flag";
     public const string AbuseInvalidReason = "abuse.invalid_reason";

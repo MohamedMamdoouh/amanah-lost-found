@@ -191,9 +191,20 @@
             </app-button>
           </div>
           @if (!auth.isLoggedIn()) {
-            <p class="public-report-detail__action-note">
-              {{ "abuse.flag.login_required" | translate }}
-            </p>
+            <aside
+              class="public-report-detail__chat-gate public-report-detail__flag-login"
+              role="note"
+            >
+              <span
+                class="public-report-detail__chat-gate-icon"
+                aria-hidden="true"
+              >
+                <app-icon name="shield" size="md" />
+              </span>
+              <p class="public-report-detail__chat-gate-text">
+                {{ "abuse.flag.login_required" | translate }}
+              </p>
+            </aside>
           }
         }
       </section>

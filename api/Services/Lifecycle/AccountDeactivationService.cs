@@ -31,7 +31,7 @@ public sealed class AccountDeactivationService(
             return ResultError.NotFound("User not found.");
         }
 
-        var blockers = await GetBlockersAsync(userId, cancellationToken);
+        var blockers = await GetBlockersAsync(user, cancellationToken);
 
         return new AccountDeactivationStatusResponse
         {
@@ -60,7 +60,7 @@ public sealed class AccountDeactivationService(
                 ErrorCodes.AccountDeactivationAlreadyRequested);
         }
 
-        var blockers = await GetBlockersAsync(userId, cancellationToken);
+        var blockers = await GetBlockersAsync(user, cancellationToken);
         if (blockers.Count > 0)
         {
             return new ResultError(
@@ -136,10 +136,16 @@ public sealed class AccountDeactivationService(
     }
 
     private async Task<IReadOnlyList<string>> GetBlockersAsync(
-        Guid userId,
+        User user,
         CancellationToken cancellationToken)
     {
         var blockers = new List<string>();
+        var userId = user.Id;
+
+        if (user.Role == UserRole.Admin)
+        {
+            blockers.Add(ErrorCodes.AccountBlockerAdminRole);
+        }
 
         var hasClaimInProgressReport = await dbContext.Reports
             .AsNoTracking()

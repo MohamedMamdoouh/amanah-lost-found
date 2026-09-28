@@ -4,7 +4,9 @@
 >
   <app-page-header
     [title]="'account.title' | translate"
-    [intro]="'account.intro' | translate"
+    [intro]="
+      (isAdmin() ? 'account.intro_admin' : 'account.intro') | translate
+    "
   />
 
   @if (loading()) {
@@ -149,7 +151,24 @@
       </div>
     }
 
-    @if (status(); as deactivationStatus) {
+    @if (isAdmin()) {
+      <div class="account-settings__panel">
+        <div class="account-settings__actions cluster">
+          <app-button
+            variant="secondary"
+            [loading]="loggingOutEverywhere()"
+            [disabled]="loggingOutEverywhere()"
+            (clicked)="logoutEverywhere()"
+          >
+            {{ "account.logout_everywhere_button" | translate }}
+          </app-button>
+        </div>
+
+        @if (logoutEverywhereError()) {
+          <app-alert variant="error">{{ logoutEverywhereError() }}</app-alert>
+        }
+      </div>
+    } @else if (status(); as deactivationStatus) {
       <div class="account-settings__panel">
         <p class="account-settings__warning">
           {{ "account.warning" | translate }}

@@ -41,11 +41,8 @@
   margin-bottom: var(--space-md);
 }
 
-.public-report-detail__action-note {
-  margin: var(--space-sm) 0 0;
-  font-size: 0.875rem;
-  color: var(--color-text-muted);
-  line-height: var(--line-height-base);
+.public-report-detail__flag-login {
+  margin-top: var(--space-sm);
 }
 
 .public-report-detail__owner-gate {

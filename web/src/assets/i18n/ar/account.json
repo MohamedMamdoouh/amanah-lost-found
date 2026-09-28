@@ -1,6 +1,7 @@
 {
   "account.title": "إعدادات الحساب",
   "account.intro": "يمكنك إدارة طرق الدخول، وإيقاف حسابك مؤقتًا، وتشغيله مجددًا بالموبايل أو البريد الإلكتروني.",
+  "account.intro_admin": "يمكنك إدارة طرق الدخول بالموبايل أو البريد الإلكتروني.",
   "account.identifiers.title": "طرق الدخول",
   "account.identifiers.phone": "رقم الموبايل",
   "account.identifiers.email": "البريد الإلكتروني",

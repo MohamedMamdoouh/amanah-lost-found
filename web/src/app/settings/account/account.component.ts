@@ -89,6 +89,8 @@ export class AccountComponent implements OnInit {
     return ids.email ? 'phone' : 'email';
   });
 
+  readonly isAdmin = computed(() => this.auth.isAdmin());
+
   ngOnInit(): void {
     void this.loadPage();
   }
@@ -229,13 +231,14 @@ export class AccountComponent implements OnInit {
 
   private async loadPage(): Promise<void> {
     try {
-      const [status, identifiers] = await Promise.all([
-        firstValueFrom(this.accountService.getDeactivationStatus()),
-        firstValueFrom(this.accountService.getIdentifiers()),
-      ]);
-      this.status.set(status);
+      const identifiers = await firstValueFrom(this.accountService.getIdentifiers());
       this.identifiers.set(identifiers);
       this.configureLinkIdentifierValidators(identifiers);
+
+      if (!this.auth.isAdmin()) {
+        const status = await firstValueFrom(this.accountService.getDeactivationStatus());
+        this.status.set(status);
+      }
     } catch {
       this.loadError.set(this.translate.instant('error.internal.error'));
     } finally {
