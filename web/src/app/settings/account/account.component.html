@@ -168,7 +168,7 @@
           <app-alert variant="error">{{ logoutEverywhereError() }}</app-alert>
         }
       </div>
-    } @else if (status(); as deactivationStatus) {
+    } @else if (status()) {
       <div class="account-settings__panel">
         <p class="account-settings__warning">
           {{ "account.warning" | translate }}
@@ -199,7 +199,7 @@
           <app-button
             variant="danger"
             [disabled]="
-              !deactivationStatus.canDeactivate ||
+              !status()!.canDeactivate ||
               deactivating() ||
               loggingOutEverywhere()
             "
