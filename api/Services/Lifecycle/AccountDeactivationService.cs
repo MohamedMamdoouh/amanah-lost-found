@@ -160,12 +160,15 @@ public sealed class AccountDeactivationService(
             blockers.Add(ErrorCodes.AccountBlockerClaimInProgress);
         }
 
+        // Resolution keeps the claim Approved and moves the report to Resolved.
+        // Only an in-progress approval can still be cancelled, so only that blocks deactivation.
         var hasApprovedClaim = await dbContext.Claims
             .AsNoTracking()
             .AnyAsync(
                 claim =>
                     claim.ClaimantId == userId
-                    && claim.Status == ClaimStatus.Approved,
+                    && claim.Status == ClaimStatus.Approved
+                    && claim.Report.Status == ReportStatus.ClaimInProgress,
                 cancellationToken);
 
         if (hasApprovedClaim)
