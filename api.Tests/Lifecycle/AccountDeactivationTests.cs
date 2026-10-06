@@ -67,6 +67,35 @@ public class AccountDeactivationTests(ApiWebApplicationFactory factory) : IClass
     }
 
     [Fact]
+    public async Task DeactivateAccount_succeeds_after_approved_claim_is_resolved()
+    {
+        await using var context = await ReportTestContext.CreateAsync(factory);
+        var scenario = await ResolutionTestHelpers.CreateApprovedClaimScenarioAsync(context);
+
+        ClaimTestHelpers.AuthenticateReporter(context.Client, context);
+        var reporterConfirm = await ResolutionTestHelpers.ConfirmResolutionAsync(context.Client, scenario.ClaimId);
+        Assert.Equal(HttpStatusCode.NoContent, reporterConfirm.StatusCode);
+
+        ClaimTestHelpers.Authenticate(context.Client, scenario.ClaimantSession.AccessToken);
+        var claimantConfirm = await ResolutionTestHelpers.ConfirmResolutionAsync(context.Client, scenario.ClaimId);
+        Assert.Equal(HttpStatusCode.NoContent, claimantConfirm.StatusCode);
+
+        var claim = await context.DbContext.Claims
+            .AsNoTracking()
+            .SingleAsync(item => item.Id == scenario.ClaimId);
+        Assert.Equal(ClaimStatus.Approved, claim.Status);
+
+        var (response, status) = await GetDeactivationStatusAsync(context);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(status);
+        Assert.DoesNotContain(ErrorCodes.AccountBlockerApprovedClaim, status.Blockers);
+        Assert.True(status.CanDeactivate);
+
+        var deactivateResponse = await DeactivateAccountAsync(context);
+        Assert.Equal(HttpStatusCode.NoContent, deactivateResponse.StatusCode);
+    }
+
+    [Fact]
     public async Task DeactivateAccount_returns_conflict_when_claimant_has_approved_claim()
     {
         await using var context = await ReportTestContext.CreateAsync(factory);
