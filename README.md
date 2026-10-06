@@ -350,7 +350,6 @@ Docker must be running. The web package has no `test` script in [web/package.jso
 | Workflow | File | When | Purpose |
 | -------- | ---- | ---- | ------- |
 | **CI** | [`.github/workflows/ci.yml`](.github/workflows/ci.yml) | Push to `main`, all pull requests | `dotnet test` on `api.Tests` (Testcontainers; Docker on the runner), then Release build of the API and `npm ci` / `npm run build` for the SPA |
-| **Keepalive** | [`.github/workflows/keepalive.yml`](.github/workflows/keepalive.yml) | Cron every 10 minutes, manual dispatch | `GET /health` on the configured origin (default production URL) to reduce Render free-tier spin-down |
 
 ---
 
@@ -380,7 +379,7 @@ Amanah/
 ├── api.Tests/                 # Integration and unit tests
 ├── specs/                     # Product spec, feature specs, build status table
 ├── docs/                      # deployment.md, observability.md
-├── .github/workflows/         # ci.yml, keepalive.yml
+├── .github/workflows/         # ci.yml
 ├── Directory.Build.props
 ├── Directory.Packages.props
 └── .env.example

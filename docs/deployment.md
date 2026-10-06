@@ -21,7 +21,6 @@ One public origin serves both the app and `/api/v1/*`.
 3. **Cloudflare R2** — create bucket and credentials for media
 4. **Unimtx** — create account, add credit, configure SMS API key
 5. **Brevo** (optional until staging) — create account, verify sender domain, configure admin alert email
-6. **Keepalive** (optional) — scheduled ping to avoid free-tier spin-down
 
 Verify `/health`, `/health/ready`, the home page, sign-in/sign-up, report submission, and claim submit/review flows after deploy (see [specs/04-claims-verification.md](../specs/04-claims-verification.md) #9 manual smoke).
 
@@ -156,7 +155,7 @@ Setup:
 
 | Limit                                | Mitigation                                |
 | ------------------------------------ | ----------------------------------------- |
-| Render spins down after ~15 min idle | Keepalive ping or paid plan before launch |
+| Render spins down after ~15 min idle | Paid plan before launch, or accept cold starts on free tier |
 | Supabase pauses when idle            | Health checks keep the DB warm            |
 | SMS is metered                       | Monitor Unimtx balance                    |
 
@@ -181,7 +180,6 @@ Walk this on the staging or production service before public launch. Product cod
 - [ ] `Cors__AllowedOrigins__0` is the public origin; add the custom domain as another origin when DNS is live
 - [ ] Custom domain configured on Render (still open — see SPEC section 14)
 - [ ] Brevo domain verified and `Email__FromAddress` uses that domain
-- [ ] `KEEPALIVE_URL` in `.github/workflows/keepalive.yml` matches the public origin
 - [ ] `GET /health` returns 200 and `GET /health/ready` is healthy
 - [ ] Manual smoke from phase specs #9: [02](../specs/02-admin-moderation.md), [04](../specs/04-claims-verification.md), [05](../specs/05-chat-resolution-notifications.md), [06](../specs/06-lifecycle-retention.md)
 - [ ] Flag a published listing, open `/admin/abuse`, and resolve it (no action, takedown, or ban)

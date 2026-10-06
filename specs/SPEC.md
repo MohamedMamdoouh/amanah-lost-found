@@ -569,7 +569,7 @@ Entity-level schedule (implementation): `OtpCode`, `RefreshToken`, `Notification
 | Moderation bottleneck                                           | Single-admin model accepted at low volume; email alerts on new submissions; monitor queue latency                                                                       |
 | Thin nationwide density                                         | Accepted at low traffic; monitor by governorate and revisit seeding strategy if needed                                                                                  |
 | PDPL cross-border transfer and missing correction/access rights | Disclosed in the Privacy Policy as accepted v1 gaps pending formal review                                                                                               |
-| Limited operational visibility                                  | Structured JSON logs + correlation IDs + log-emitted metrics on Render; GH Actions keepalive alerting; see [observability.md](../docs/observability.md)                 |
+| Limited operational visibility                                  | Structured JSON logs + correlation IDs + log-emitted metrics on Render; see [observability.md](../docs/observability.md)                                                 |
 | Weak discovery with simple keyword search                       | Keyword search over title, description, category fields and area, with Arabic normalization                                                                             |
 | No link previews on shared URLs                                 | Accepted trade-off for v1                                                                                                                                               |
 
@@ -796,7 +796,7 @@ Per section 7.5. On limit exceed: HTTP `429` with `Retry-After` header.
 - **Migrations:** EF Core migrations on API startup.
 - **Scheduled jobs:** in-process on the API. `LifecycleJobsHostedService` polls lifecycle and retention jobs (default hourly): retention cleanup (section 12), **listing expiry** and expiry-warning checks (4.7), and **pending-claim timeout** (6.3). OTP SMS, admin-alert email, and storage-deletion outboxes run on separate shorter loops. Business-date logic uses Africa/Cairo day boundaries where applicable. See [deployment.md](../docs/deployment.md).
 - **Backups:** Supabase managed Postgres defaults.
-- **Monitoring:** Structured JSON logs to Render (correlation IDs, log-emitted metrics). Health: `GET /health` (liveness), `GET /health/ready` (DB + storage). Alerting: GitHub Actions keepalive + GitHub email on workflow failure. See [observability.md](../docs/observability.md).
+- **Monitoring:** Structured JSON logs to Render (correlation IDs, log-emitted metrics). Health: `GET /health` (liveness), `GET /health/ready` (DB + storage). See [observability.md](../docs/observability.md).
 - **Caching:** `HybridCache` via `ICacheService` (Section 16). Config: `Cache:CategoriesTtlSeconds`, `Cache:GovernoratesTtlSeconds` in `appsettings.json`. No distributed cache is registered in v1.
 - **Transactional email:** admin moderation-queue alert only (section 5.7). Provider: Brevo via `admin_alert_email_outbox` (section 14).
 - **Budget:** ~$0/month infra for MVP testing (Render + Supabase free tiers); ~$5/month recommended before public launch for always-on API. SMS via Unimtx (pay-as-you-go, ~$0.135/SMS in Egypt).
